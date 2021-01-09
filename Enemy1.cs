@@ -26,12 +26,9 @@ public class Enemy1 : Unit
         {
             Invoke("DestroySelf", 0f);
         }
-        if (CanSeePlayer(5f) && !attackOnCooldown)
+        if (CanSeePlayer(5f))
         {
-            /*
             Debug.Log("Sees player");
-            Attack();
-            */
         }
     }
 
@@ -96,13 +93,20 @@ public class Enemy1 : Unit
 
         RaycastHit2D hit = Physics2D.Linecast(castPoint.position, endPos, 1 << LayerMask.NameToLayer("Action"));
 
+        */
+        RaycastHit2D hit = Physics2D.CircleCast(transform.position, 2f, new Vector2(0, 0));
+
+
         if (hit.collider != null)
         {
             if (hit.collider.gameObject.CompareTag("Player"))
             {
+                Debug.Log("CircleCast hit player!");
                 return true;
             }
         }
+
+        /*
 
         Debug.DrawLine(castPoint.position, endPos, Color.red);
 

@@ -6,7 +6,7 @@ public class BulletScript : MonoBehaviour
 {
     public Rigidbody2D rb;
     public SpriteRenderer spriteRenderer;
-    public float speed = 0.01f;
+    public float speed = 3f;
 
     void Start()
     {
@@ -25,7 +25,7 @@ public class BulletScript : MonoBehaviour
 
     public void SetDirection(Vector2 moveDir)
     {
-        rb.velocity = new Vector2(moveDir.x, moveDir.y);
+        rb.velocity = new Vector2(moveDir.x * speed, moveDir.y * speed);
     }
 
     protected void OnTriggerEnter2D(Collider2D col)
@@ -38,6 +38,10 @@ public class BulletScript : MonoBehaviour
             {
                 col.gameObject.GetComponent<Unit>().DestroySelf();
             }
+            Invoke("DestroySelf", 0f);
+        }
+        else if (col.CompareTag("Environment"))
+        {
             Invoke("DestroySelf", 0f);
         }
     }
