@@ -11,8 +11,6 @@ public class FieldOfView: MonoBehaviour
     public LayerMask playerMask;
     public LayerMask environmentMask;
 
-    public GameObject source;
-
     [HideInInspector]
     public List<Transform> visiblePlayers = new List<Transform>();
 

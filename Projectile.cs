@@ -18,6 +18,14 @@ public class Projectile : MonoBehaviour
         Invoke("DestroySelf", duration);
     }
 
+    public void SetDirection(Vector2 destination)
+    {
+        float angle = Mathf.Atan2(destination.y - transform.position.y, destination.x - transform.position.x);
+        Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+
+        GetComponent<Rigidbody2D>().velocity = new Vector2(dir.x * speed, dir.y * speed);
+    }
+
     protected void OnTriggerEnter2D(Collider2D col)
     {
         if ((source.CompareTag("Player") && col.CompareTag("Enemy")) || 

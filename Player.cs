@@ -26,8 +26,4 @@ public class Player : Unit
         }
     }
 
-    private void DestroySelf()
-    {
-        Destroy(gameObject);
-    }
 }
