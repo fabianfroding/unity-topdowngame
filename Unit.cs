@@ -6,7 +6,6 @@ public class Unit : MonoBehaviour
     public Material matDefault;
     public Material matWhite;
     public SpriteRenderer spriteRenderer;
-    public bool isFacingLeft;
 
     protected virtual void Start()
     {
