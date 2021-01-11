@@ -5,15 +5,15 @@ public class Enemy : Unit
     [SerializeField]
     private GameObject enemyProjectile;
 
-    private FieldOfView fov;
-
+    [SerializeField]
+    private float attackCooldown;
     private bool attackOnCooldown = false;
+
+    private FieldOfView fov;
 
     protected override void Start()
     {
         base.Start();
-        health = 5;
-        moveSpeed = 1.5f;
 
         fov = GetComponent<FieldOfView>();
 
@@ -27,16 +27,26 @@ public class Enemy : Unit
             DestroySelf();
         }
         
-        if (fov.visiblePlayers.Count > 0 && !attackOnCooldown)
+        if (fov.visiblePlayers.Count > 0)
         {
-            attackOnCooldown = true;
-            Attack();
+            // Set rotation to player direction.
+            Transform target = fov.visiblePlayers.ToArray()[0].gameObject.transform;
+            Vector3 dir = target.position - transform.position;
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
+            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+            rb.rotation = angle;
+
+            if (!attackOnCooldown)
+            {
+                attackOnCooldown = true;
+                Attack();
+            }
         }
     }
 
     private void Attack()
     {
-        Debug.Log("Attacking");
         attackOnCooldown = true;
 
         GameObject target = fov.visiblePlayers.ToArray()[0].gameObject;
@@ -46,26 +56,24 @@ public class Enemy : Unit
         projectile.GetComponent<Projectile>().SetDirection(target.transform.position);
         projectile.GetComponent<Projectile>().InvokeDestroySelf(3f);
 
-        Invoke("ResetAttackCooldown", 5f);
+        Invoke("ResetAttackCooldown", attackCooldown);
     }
 
     private void Patrol()
     {
-        Debug.Log("Patrol");
         int[] iArr = new int[] { -1, 1 };
         Vector2 moveDir = new Vector2(iArr[Random.Range(0, iArr.Length)], iArr[Random.Range(0, iArr.Length)]).normalized;
-        //rb.velocity = new Vector2(moveDir.x * moveSpeed, moveDir.y * moveSpeed);
+        rb.velocity = new Vector2(moveDir.x * moveSpeed, moveDir.y * moveSpeed);
 
-        float rand = Random.Range(1, 360);
-        rb.SetRotation(rand);
-        rb.velocity = transform.right.normalized * moveSpeed;
+        Vector2 dir = rb.velocity;
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        rb.rotation = angle - 90;
 
         Invoke("StopPatrol", Random.Range(1.5f, 3f));
     }
 
     private void StopPatrol()
     {
-        Debug.Log("Stop Patrol");
         rb.velocity = new Vector2(0, 0);
         Invoke("Patrol", Random.Range(3f, 8f));
     }
@@ -73,5 +81,14 @@ public class Enemy : Unit
     private void ResetAttackCooldown()
     {
         attackOnCooldown = false;
+    }
+
+    private void OnCollisionEnter2D(Collision2D col)
+    {
+        if (col.gameObject.CompareTag("Environment"))
+        {
+            CancelInvoke("StopPatrol");
+            StopPatrol();
+        }
     }
 }

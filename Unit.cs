@@ -21,7 +21,7 @@ public class Unit : MonoBehaviour
         spriteRenderer.material = matDefault;
     }
 
-    public void DestroySelf()
+    public virtual void DestroySelf()
     {
         Destroy(gameObject);
     }
