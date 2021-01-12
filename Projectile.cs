@@ -33,6 +33,7 @@ public class Projectile : MonoBehaviour
         {
             int health = col.gameObject.GetComponent<Unit>().health--;
             if (col.CompareTag("Player")) col.GetComponent<Player>().UpdateHealthText();
+            if (col.CompareTag("Enemy")) col.GetComponent<Enemy>().FaceTarget(source);
             if (health <= 0)
             {
                 col.gameObject.GetComponent<Unit>().DestroySelf();

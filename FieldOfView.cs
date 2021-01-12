@@ -37,7 +37,7 @@ public class FieldOfView: MonoBehaviour
         }
     }
 
-    void FindVisiblePlayer()
+    public GameObject FindVisiblePlayer()
     {
         visiblePlayers.Clear();
         Collider2D[] playerInViewRadius = Physics2D.OverlapCircleAll(transform.position, viewRadius, playerMask);
@@ -49,11 +49,19 @@ public class FieldOfView: MonoBehaviour
             if (Vector3.Angle(transform.up, dirToPlayer) < viewAngle / 2)
             {
                 float distToTarget = Vector3.Distance(transform.position, player.position);
-                if (!Physics2D.Raycast(transform.position, dirToPlayer, distToTarget, environmentMask))
+                RaycastHit2D hit = Physics2D.Raycast(transform.position, dirToPlayer, distToTarget, environmentMask);
+                if (!hit)
                 {
                     visiblePlayers.Add(player);
+                    return player.gameObject;
+                }
+                else
+                {
+                    return hit.collider.gameObject;
                 }
             }
         }
+
+        return null;
     }
 }

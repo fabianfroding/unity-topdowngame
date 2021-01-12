@@ -9,9 +9,13 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 moveDir;
 
+    private bool attackOnCooldown;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        attackOnCooldown = false;
     }
 
     void Update()
@@ -34,20 +38,27 @@ public class PlayerController : MonoBehaviour
 
         moveDir = new Vector2(moveX, moveY).normalized;
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && !attackOnCooldown)
         {
-            Vector2 mousePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            attackOnCooldown = true;
 
-            float angle = Mathf.Atan2(mousePoint.y - transform.position.y, mousePoint.x - transform.position.x);
-            Vector2 bulletDir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+            GameObject projectile = Instantiate(bulletRef, transform.position, Quaternion.identity);
+            projectile.GetComponent<Projectile>().source = this.gameObject;
+            projectile.GetComponent<Projectile>().SetDirection(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            projectile.GetComponent<Projectile>().InvokeDestroySelf(3f);
 
-            GameObject bullet = Instantiate(bulletRef, transform.position, Quaternion.identity);
-            bullet.GetComponent<BulletScript>().SetDirection(bulletDir);
+            Invoke("ResetAttackCooldown", 1f);
         }
+
     }
 
     private void Move()
     {
         rb.velocity = new Vector2(moveDir.x * moveSpeed, moveDir.y * moveSpeed);
+    }
+
+    private void ResetAttackCooldown()
+    {
+        attackOnCooldown = false;
     }
 }

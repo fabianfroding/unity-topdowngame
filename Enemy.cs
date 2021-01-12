@@ -27,19 +27,13 @@ public class Enemy : Unit
             DestroySelf();
         }
         
-        if (fov.visiblePlayers.Count > 0)
+        if (GetTarget() != null && GetTarget().CompareTag("Player"))
         {
-            // Set rotation to player direction.
-            Transform target = fov.visiblePlayers.ToArray()[0].gameObject.transform;
-            Vector3 dir = target.position - transform.position;
-            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
-            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-            rb.rotation = angle;
+            StopPatrol();
+            FaceTarget(fov.visiblePlayers.ToArray()[0].gameObject);
 
             if (!attackOnCooldown)
             {
-                attackOnCooldown = true;
                 Attack();
             }
         }
@@ -49,11 +43,9 @@ public class Enemy : Unit
     {
         attackOnCooldown = true;
 
-        GameObject target = fov.visiblePlayers.ToArray()[0].gameObject;
-
         GameObject projectile = Instantiate(enemyProjectile, transform.position, Quaternion.identity);
         projectile.GetComponent<Projectile>().source = this.gameObject;
-        projectile.GetComponent<Projectile>().SetDirection(target.transform.position);
+        projectile.GetComponent<Projectile>().SetDirection(fov.visiblePlayers.ToArray()[0].gameObject.transform.position);
         projectile.GetComponent<Projectile>().InvokeDestroySelf(3f);
 
         Invoke("ResetAttackCooldown", attackCooldown);
@@ -74,6 +66,7 @@ public class Enemy : Unit
 
     private void StopPatrol()
     {
+        CancelInvoke("Patrol");
         rb.velocity = new Vector2(0, 0);
         Invoke("Patrol", Random.Range(3f, 8f));
     }
@@ -87,8 +80,20 @@ public class Enemy : Unit
     {
         if (col.gameObject.CompareTag("Environment"))
         {
-            CancelInvoke("StopPatrol");
             StopPatrol();
         }
+    }
+
+    private GameObject GetTarget()
+    {
+        return fov.FindVisiblePlayer();
+    }
+
+    public void FaceTarget(GameObject target)
+    {
+        Vector3 dir = target.transform.position - transform.position;
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
+        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        rb.rotation = angle;
     }
 }
