@@ -14,6 +14,14 @@ public class Unit : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         matDefault = spriteRenderer.material;
+        matWhite = Resources.Load("WhiteFlash", typeof(Material)) as Material;
+    }
+
+    public void TakeDamage()
+    {
+        spriteRenderer.material = matWhite;
+        Invoke("ResetMaterial", .2f);
+        Debug.Log(gameObject.name + " take dmg");
     }
 
     public void ResetMaterial()

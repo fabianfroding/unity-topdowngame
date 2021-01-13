@@ -3,8 +3,8 @@
 public class CameraController : MonoBehaviour
 {
     private float scrollSensitivity = 2f;
-    private float minFOV = 3;
-    private float maxFOV = 7;
+    private float minFOV = 1.75f;
+    private float maxFOV = 3.5f;
 
     private void Update()
     {

@@ -6,10 +6,15 @@ public class Enemy : Unit
     private GameObject enemyProjectile;
 
     [SerializeField]
+    private AudioSource aggroSound;
+
+    [SerializeField]
     private float attackCooldown;
     private bool attackOnCooldown = false;
 
     private FieldOfView fov;
+
+    private bool seenPlayer = false;
 
     protected override void Start()
     {
@@ -30,12 +35,22 @@ public class Enemy : Unit
         if (GetTarget() != null && GetTarget().CompareTag("Player"))
         {
             StopPatrol();
+
+            if (!seenPlayer) {
+                aggroSound.Play();
+            }
+            seenPlayer = true;
+
             FaceTarget(fov.visiblePlayers.ToArray()[0].gameObject);
 
             if (!attackOnCooldown)
             {
                 Attack();
             }
+        }
+        else
+        {
+            seenPlayer = false;
         }
     }
 

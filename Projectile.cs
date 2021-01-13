@@ -38,6 +38,10 @@ public class Projectile : MonoBehaviour
             {
                 col.gameObject.GetComponent<Unit>().DestroySelf();
             }
+            else
+            {
+                col.GetComponent<Unit>().TakeDamage();
+            }
             DestroySelf();
         }
         else if (col.CompareTag("Environment"))
