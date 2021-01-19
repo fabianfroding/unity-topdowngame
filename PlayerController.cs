@@ -33,10 +33,17 @@ public class PlayerController : MonoBehaviour
 
     private void ProcessInputs()
     {
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveY = Input.GetAxisRaw("Vertical");
+        float x = Input.GetAxisRaw("Horizontal");
+        float y = Input.GetAxisRaw("Vertical");
+        moveDir = new Vector2(x, y).normalized;
 
-        moveDir = new Vector2(moveX, moveY).normalized;
+        if (x != 0 || y != 0)
+        {
+            Vector3 moveVector = Vector3.zero;
+            moveVector.x = Input.GetAxis("Horizontal");
+            moveVector.y = Input.GetAxis("Vertical");
+            GetComponent<Player>().SetSpriteAngle(moveVector);
+        }
 
         if (Input.GetMouseButtonDown(0) && !attackOnCooldown)
         {

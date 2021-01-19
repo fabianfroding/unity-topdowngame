@@ -20,7 +20,7 @@ public class Unit : MonoBehaviour
     public void TakeDamage()
     {
         spriteRenderer.material = matWhite;
-        Invoke("ResetMaterial", .2f);
+        Invoke("ResetMaterial", .1f);
         Debug.Log(gameObject.name + " take dmg");
     }
 
