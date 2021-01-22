@@ -23,7 +23,7 @@ public class GameUtils : MonoBehaviour
 
     private void GameOver()
     {
-        if (clock.GetComponent<Clock>().GetTimeOfDay() >= 5.98)
+        if (clock.GetComponent<Clock>().GetTimeOfDay() >= 6.0)
         {
             SceneManager.LoadScene("GameOver");
         }

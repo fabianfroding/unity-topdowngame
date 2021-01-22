@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -6,20 +7,17 @@ public class Player : Unit
 {
     private Sprite defaultSprite;
 
-    [SerializeField]
-    private Text healthText;
+    [SerializeField] private TextMeshProUGUI healthTextMesh;
 
-    [SerializeField]
-    private Camera cam;
+    [SerializeField] private Camera cam;
 
-    [SerializeField]
-    Sprite[] sprite;
+    [SerializeField] Sprite[] sprite;
 
     protected override void Start()
     {
         base.Start();
         health = 3;
-        healthText.text = "Health: " + health + "/3";
+        healthTextMesh.text = "Health: " + health + "/3";
 
         defaultSprite = GetComponent<SpriteRenderer>().sprite;
     }
@@ -27,7 +25,7 @@ public class Player : Unit
     public void UpdateHealthText()
     {
         int currHealth = health <= 0 ? 0 : health;
-        healthText.text = "Health: " + currHealth + "/3";
+        healthTextMesh.text = "Health: " + currHealth + "/3";
     }
 
     private void FixedUpdate()

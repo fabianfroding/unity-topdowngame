@@ -1,30 +1,23 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 public class NPC : MonoBehaviour
 {
-    public GameObject dialogueBox;
-    public Text dialogText;
-    public string dialog;
-    public bool playerInRange;
+    private bool playerInRange;
+    private Dialog dialog1;
+
+    private void Start()
+    {
+        dialog1 = GetComponent<Dialog>();
+    }
 
     private void FixedUpdate()
     {
         if (playerInRange)
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKey(KeyCode.E) && !dialog1.isActive())
             {
-                if (dialogueBox.activeInHierarchy)
-                {
-                    dialogueBox.SetActive(false);
-                }
-                else
-                {
-                    dialogueBox.SetActive(true);
-                    dialogText.text = dialog;
-                }
+                Debug.Log("Start dialog with " + this.gameObject.name);
+                dialog1.StartDialog();
             }
         }
     }
@@ -42,7 +35,6 @@ public class NPC : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerInRange = false;
-            dialogueBox.SetActive(false);
         }
     }
 }
