@@ -3,6 +3,8 @@ using UnityEngine.UI;
 
 public class Clock : MonoBehaviour
 {
+    public static Clock instance;
+
     [SerializeField]
     private GameObject dayNightSymbol;
     [SerializeField]
@@ -25,6 +27,11 @@ public class Clock : MonoBehaviour
 
     private bool day1Passed = false;
     private bool day2Passed = false;
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
