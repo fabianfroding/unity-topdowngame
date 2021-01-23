@@ -1,11 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
+    public static UIManager instance;
     public GameObject ClockUI;
     public GameObject HealthUI;
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
     public void HealthUISetActive(bool flag)
     {

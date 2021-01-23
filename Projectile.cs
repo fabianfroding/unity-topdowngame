@@ -31,17 +31,9 @@ public class Projectile : MonoBehaviour
         if ((source.CompareTag("Player") && col.CompareTag("Enemy")) || 
             (source.CompareTag("Enemy") && col.CompareTag("Player")))
         {
-            int health = col.gameObject.GetComponent<Unit>().health--;
+            col.GetComponent<Unit>().TakeDamage(1);
             if (col.CompareTag("Player")) col.GetComponent<Player>().UpdateHealthText();
             if (col.CompareTag("Enemy")) col.GetComponent<Enemy>().FaceTarget(source);
-            if (health <= 0)
-            {
-                col.gameObject.GetComponent<Unit>().DestroySelf();
-            }
-            else
-            {
-                col.GetComponent<Unit>().TakeDamage();
-            }
             DestroySelf();
         }
         else if (col.CompareTag("Environment"))

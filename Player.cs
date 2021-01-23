@@ -28,20 +28,11 @@ public class Player : Unit
         healthTextMesh.text = "Health: " + currHealth + "/3";
     }
 
-    private void FixedUpdate()
-    {
-        if (health <= 0)
-        {
-            DestroySelf();
-            Invoke("GameOver", 3f);
-        }
-    }
-
     public override void DestroySelf()
     {
         spriteRenderer.enabled = false;
-        rb.velocity = new Vector2(0, 0);
         GetComponent<CircleCollider2D>().enabled = false;
+        Invoke("GameOver", 3f);
     }
 
     public void SetSpriteAngle(Vector3 vec)

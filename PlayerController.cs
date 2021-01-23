@@ -2,11 +2,14 @@
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController instance;
+
     public float moveSpeed;
     public Rigidbody2D rb;
 
     public GameObject bulletRef;
 
+    [SerializeField] private bool isEnabled;
     [SerializeField] private LayerMask dashLayerMask;
 
     private Vector2 moveDir;
@@ -25,21 +28,29 @@ public class PlayerController : MonoBehaviour
         Rolling,
     }
 
+    //========== PUBLIC METHODS ==========//
+    public void SetActive(bool flag)
+    {
+        isEnabled = flag;
+    }
+
+    //========== PRIVATE METHODS ==========//
     private void Awake()
     {
+        instance = this;
         state = State.Normal;
     }
 
-    void Start()
+    private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-
+        isEnabled = true;
         attackOnCooldown = false;
     }
 
-    void Update()
+    private void Update()
     {
-        if (GetComponent<Unit>().health > 0)
+        if (isEnabled && GetComponent<Unit>().health > 0)
         {
             ProcessInputs();
         }
@@ -47,7 +58,10 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Move();
+        if (GetComponent<Unit>().health > 0)
+        {
+            Move();
+        }
     }
 
     private void ProcessInputs()
@@ -133,7 +147,7 @@ public class PlayerController : MonoBehaviour
                 rb.velocity = rollDir * rollSpeed;
                 break;
         }
-        
+
     }
 
     private void ResetAttackCooldown()

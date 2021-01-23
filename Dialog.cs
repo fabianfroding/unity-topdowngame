@@ -14,9 +14,12 @@ public class Dialog : MonoBehaviour
     //========== PUBLIC METHODS ==========//
     public void StartDialog()
     {
-        // TODO: Disable other UI and disable player controller (make player controller static).
-        //UIManager.HealthUISetActive(false);
-        // TODO: Disable enemies while in dialog.
+        UIManager.instance.HealthUISetActive(false);
+        UIManager.instance.ClockUISetActive(false);
+        PlayerController.instance.enabled = false;
+
+        // TODO: Find a way to prevent enemy combat during dialog.
+
         active = true;
         sentenceDone = false;
         StartCoroutine(Type());
@@ -24,7 +27,7 @@ public class Dialog : MonoBehaviour
 
     public bool isActive()
     {
-        return active;;
+        return active; ;
     }
 
     //========== PRIVATE METHODS ==========//
@@ -59,6 +62,11 @@ public class Dialog : MonoBehaviour
         Debug.Log("Exit dialog");
         sentenceIndex = 0;
         textDisplay.text = "";
+
+        UIManager.instance.HealthUISetActive(true);
+        UIManager.instance.ClockUISetActive(true);
+        PlayerController.instance.enabled = true;
+
         active = false;
     }
 
