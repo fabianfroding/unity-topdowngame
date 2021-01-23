@@ -48,7 +48,7 @@ public class Clock : MonoBehaviour
         float dayNorm = day % 1f;
         float rot = 180f;
 
-        transform.eulerAngles = new Vector3(0, 0, -dayNorm * rot + 90f);
+        transform.eulerAngles = new Vector3(0, 0, -dayNorm * rot - 90f);
     }
 
     public float GetTimeOfDay()
@@ -69,7 +69,7 @@ public class Clock : MonoBehaviour
             dayNightSymbol.GetComponent<Image>().sprite = dayImage;
         }
 
-        dayNightSymbol.GetComponent<Image>().transform.eulerAngles = new Vector3(0, 0, -90f);
+        dayNightSymbol.GetComponent<Image>().transform.eulerAngles = new Vector3(0, 0, 0f);
     }
 
     private void SetDaySymbol(float time)
