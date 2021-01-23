@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Item : MonoBehaviour
 {
@@ -14,7 +12,6 @@ public class Item : MonoBehaviour
             {
                 if (!Inventory.instance.hasItem[i])
                 {
-                    // Add item
                     Inventory.instance.hasItem[i] = true;
                     Instantiate(itemBTN, Inventory.instance.slots[i].transform, false);
                     Destroy(gameObject);
