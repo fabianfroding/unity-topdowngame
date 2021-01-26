@@ -19,9 +19,9 @@ public class Clock : MonoBehaviour
     [SerializeField]
     private Sprite clockImageDay3;
 
-    private const float SEC_PER_DAY = 10f;
+    private const float SEC_PER_DAY = 1039.8f;
     private Transform transform;
-    private float day;
+    private static float day;
 
     private bool daySymbol = true;
 
@@ -51,9 +51,14 @@ public class Clock : MonoBehaviour
         transform.eulerAngles = new Vector3(0, 0, -dayNorm * rot - 90f);
     }
 
-    public float GetTimeOfDay()
+    public float GetTimeElapsed()
     {
         return day;
+    }
+
+    public static void SetTime(float time)
+    {
+        day = time;
     }
 
     private void SetDayNightSymbol(float time)

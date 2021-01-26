@@ -8,10 +8,8 @@ public class Player : Unit
     private Sprite defaultSprite;
 
     [SerializeField] private TextMeshProUGUI healthTextMesh;
-
     [SerializeField] private Camera cam;
-
-    [SerializeField] Sprite[] sprite;
+    [SerializeField] private Sprite[] sprite;
 
     protected override void Start()
     {

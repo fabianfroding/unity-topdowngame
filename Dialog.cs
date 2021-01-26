@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class Dialog : MonoBehaviour
 {
-    private const float TYPING_SPEED = 0.03f;
-    [SerializeField] private TextMeshProUGUI textDisplay; // TODO: Make dynamic so that each NPC doesn't need it's own textDisplay object.
+    private const float TYPING_SPEED = 0.015f;
+    [SerializeField] private TextMeshProUGUI textDisplay; // TODO: Make script find component so you dont have to set the same ref for each npc.
     [SerializeField] private string[] sentences;
+    [SerializeField] private GameObject dialogBG; // TODO: Find a way so you dont have to set image for each npc.
     private int sentenceIndex;
     private bool sentenceDone;
     private bool active;
@@ -16,12 +18,13 @@ public class Dialog : MonoBehaviour
     {
         UIManager.instance.HealthUISetActive(false);
         UIManager.instance.ClockUISetActive(false);
-        PlayerController.instance.enabled = false;
+        PlayerController2.isEnabled = false;
 
         // TODO: Find a way to prevent enemy combat during dialog.
 
         active = true;
         sentenceDone = false;
+        dialogBG.GetComponent<Image>().enabled = true;
         StartCoroutine(Type());
     }
 
@@ -60,12 +63,13 @@ public class Dialog : MonoBehaviour
     private void ResetDialog()
     {
         Debug.Log("Exit dialog");
+        dialogBG.GetComponent<Image>().enabled = false;
         sentenceIndex = 0;
         textDisplay.text = "";
 
         UIManager.instance.HealthUISetActive(true);
         UIManager.instance.ClockUISetActive(true);
-        PlayerController.instance.enabled = true;
+        PlayerController2.isEnabled = true;
 
         active = false;
     }

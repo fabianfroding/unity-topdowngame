@@ -6,6 +6,6 @@ public class MainMenu : MonoBehaviour
     public void BTNStart_Click()
     {
         PlayerPrefs.DeleteAll();
-        SceneManager.LoadScene("Zone1");
+        SceneManager.LoadScene("Shrine");
     }
 }

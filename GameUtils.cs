@@ -4,8 +4,11 @@ using UnityEngine.SceneManagement;
 
 public class GameUtils : MonoBehaviour
 {
+    public static GameUtils instance;
+
     private void Start()
     {
+        instance = this;
         StartCoroutine("GameOverCheck", .2f);
     }
 
@@ -20,7 +23,7 @@ public class GameUtils : MonoBehaviour
 
     private void GameOver()
     {
-        if (Clock.instance.GetTimeOfDay() >= 5.99)
+        if (Clock.instance.GetTimeElapsed() >= 5.99)
         {
             SceneManager.LoadScene("GameOver");
         }
