@@ -5,11 +5,13 @@ using UnityEngine.UI;
 
 public class Player : Unit
 {
-    private Sprite defaultSprite;
-
     [SerializeField] private TextMeshProUGUI healthTextMesh;
     [SerializeField] private Camera cam;
     [SerializeField] private Sprite[] sprite;
+    [SerializeField] private GameObject hitSoundRef;
+
+    private Sprite defaultSprite;
+    private bool isHit = false;
 
     protected override void Start()
     {
@@ -58,5 +60,24 @@ public class Player : Unit
     private void GameOver()
     {
         SceneManager.LoadScene("MainMenu");
+    }
+
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (!isHit && other.gameObject.CompareTag("Enemy"))
+        {
+            // TODO: Add some knackback effect or something.
+            isHit = true;
+            Invoke("ResetHit", 1.75f);
+            GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity);
+            Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);
+            TakeDamage(1);
+            UpdateHealthText();
+        }
+    }
+
+    private void ResetHit()
+    {
+        isHit = false;
     }
 }

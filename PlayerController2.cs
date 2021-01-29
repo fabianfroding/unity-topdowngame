@@ -45,7 +45,7 @@ public class PlayerController2 : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (isEnabled)
+        if (isEnabled && GetComponent<Player>().health > 0)
         {
             Move();
         }
@@ -53,7 +53,7 @@ public class PlayerController2 : MonoBehaviour
 
     private void Update()
     {
-        if (isEnabled)
+        if (isEnabled && GetComponent<Player>().health > 0)
         {
             ProcessInputs();
         }
