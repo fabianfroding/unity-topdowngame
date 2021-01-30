@@ -2,26 +2,27 @@
 
 public class Enemy : Unit
 {
-    [SerializeField]
-    private GameObject enemyProjectile;
-
-    [SerializeField]
-    private AudioSource aggroSound;
-
-    [SerializeField]
-    private float attackCooldown;
+    [SerializeField] private GameObject enemyProjectile;
+    [SerializeField] private AudioSource aggroSound;
+    [SerializeField] private float attackCooldown;
     private bool attackOnCooldown = false;
-
     private FieldOfView fov;
-
     private bool seenPlayer = false;
 
+    //==================== PUBLIC ====================//
+    public void FaceTarget(GameObject target)
+    {
+        Vector3 dir = target.transform.position - transform.position;
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
+        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        rb.rotation = angle;
+    }
+
+    //==================== PUBLIC ====================//
     protected override void Start()
     {
         base.Start();
-
         fov = GetComponent<FieldOfView>();
-
         Patrol();
     }
 
@@ -102,13 +103,5 @@ public class Enemy : Unit
     private GameObject GetTarget()
     {
         return fov.FindVisiblePlayer();
-    }
-
-    public void FaceTarget(GameObject target)
-    {
-        Vector3 dir = target.transform.position - transform.position;
-        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
-        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        rb.rotation = angle;
     }
 }

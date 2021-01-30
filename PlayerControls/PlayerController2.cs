@@ -6,21 +6,20 @@ public class PlayerController2 : MonoBehaviour
     private const float JUMP_SPEED = 3f;
     private const float JUMP_FALL_MULTIPLIER = 2f;
     private const float JUMP_LOW_MULTIPLIER = 1.5f;
-
     private const KeyCode KEY_CODE_DASH = KeyCode.O;
 
     public static bool isEnabled = true;
 
-    [SerializeField] GameObject slashHitBoxLeft;
-    [SerializeField] GameObject slashHitBoxRight;
-    [SerializeField] GameObject slashUpHitBox;
+    [SerializeField] private GameObject slashHitBoxLeft;
+    [SerializeField] private GameObject slashHitBoxRight;
+    [SerializeField] private GameObject slashUpHitBox;
+    [SerializeField] private GameObject swingSoundRef;
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
     private Vector2 moveDir;
     private Vector3 dashDir;
-    private Vector3 lastMoveDir;
     private bool hasJumped = false;
     private bool facingLeft = true;
     private bool attackOnCD = false;
@@ -34,6 +33,7 @@ public class PlayerController2 : MonoBehaviour
         Dashing,
     }
 
+    //==================== PUBLIC ====================//
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -43,6 +43,12 @@ public class PlayerController2 : MonoBehaviour
         state = State.Normal;
     }
 
+    public bool HasJumped()
+    {
+        return hasJumped;
+    }
+
+    //==================== PRIVATE ====================//
     private void FixedUpdate()
     {
         if (isEnabled && GetComponent<Player>().health > 0)
@@ -67,7 +73,6 @@ public class PlayerController2 : MonoBehaviour
                 //----- Move -----//
                 float x = Input.GetAxisRaw("Horizontal");
                 moveDir = new Vector2(x, 0).normalized;
-                lastMoveDir = moveDir;
                 SetFacing(x);
 
                 //----- Jump -----//
@@ -81,6 +86,8 @@ public class PlayerController2 : MonoBehaviour
                 if (!attackOnCD && Input.GetKeyDown(KeyCode.K))
                 {
                     attackOnCD = true;
+                    GameObject swingSound = Instantiate(swingSoundRef, transform.position, Quaternion.identity);
+                    Destroy(swingSound, swingSound.GetComponent<AudioSource>().clip.length);
                     if (Input.GetKey(KeyCode.W))
                     {
                         animator.Play("PlayerAttackUp");
@@ -92,14 +99,12 @@ public class PlayerController2 : MonoBehaviour
                         if (facingLeft) slashHitBoxRight.SetActive(true);
                         else slashHitBoxLeft.SetActive(true);
                     }
-                    Invoke("ResetAttack", 0.06f);
+                    Invoke("ResetAttack", 0.5f);
                 }
 
                 //----- Dash -----//
                 if (Input.GetKeyDown(KEY_CODE_DASH))
                 {
-                    // TODO: If no movement and INput W, dash up.
-                    // If no movement, then dash in facing direction.
                     dashDir = GetInputDirection();
                     if (dashDir != (Vector3)Vector2.up && ((Vector2)dashDir == Vector2.zero || rb.velocity == Vector2.zero))
                     {

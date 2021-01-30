@@ -21,7 +21,7 @@ public class Clock : MonoBehaviour
 
     [SerializeField] private GameObject godsEye;
 
-    private const float SEC_PER_DAY = 1039.8f;
+    private const float SEC_PER_DAY = 10f;//1039.8f;
     private Transform transform;
     private static float day;
 
@@ -43,8 +43,7 @@ public class Clock : MonoBehaviour
     void FixedUpdate()
     {
         day += Time.deltaTime / SEC_PER_DAY;
-        Debug.Log(day);
-        godsEye.transform.localScale = new Vector3(2 + day * 4, 2 + day * 4, 2 + day * 4);
+        godsEye.transform.localScale = new Vector3(0.33f + day * 0.8f, 0.33f + day * 0.8f, 0);
 
         SetDayNightSymbol(day);
         SetDaySymbol(day);

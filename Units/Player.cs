@@ -1,7 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class Player : Unit
 {
@@ -13,26 +12,24 @@ public class Player : Unit
     private Sprite defaultSprite;
     private bool isHit = false;
 
-    protected override void Start()
+    //==================== PUBLIC ====================//
+    public override void TakeDamage(GameObject source, int amount)
     {
-        base.Start();
-        health = 3;
-        healthTextMesh.text = "Health: " + health + "/3";
+        GetComponent<TimeStop>().StopTime(0.05f, 10, 1f);
+        base.TakeDamage(source, amount);
+    }
 
-        defaultSprite = GetComponent<SpriteRenderer>().sprite;
+    public override void DestroySelf(float delay = 0f)
+    {
+        spriteRenderer.enabled = false;
+        GetComponent<CircleCollider2D>().enabled = false;
+        Invoke("GameOver", 3f);
     }
 
     public void UpdateHealthText()
     {
         int currHealth = health <= 0 ? 0 : health;
         healthTextMesh.text = "Health: " + currHealth + "/3";
-    }
-
-    public override void DestroySelf()
-    {
-        spriteRenderer.enabled = false;
-        GetComponent<CircleCollider2D>().enabled = false;
-        Invoke("GameOver", 3f);
     }
 
     public void SetSpriteAngle(Vector3 vec)
@@ -53,6 +50,16 @@ public class Player : Unit
         defaultSprite = sprite[spriteIndex];
     }
 
+    //==================== PRIVATE ====================//
+    protected override void Start()
+    {
+        base.Start();
+        health = 4;
+        healthTextMesh.text = "Health: " + health + "/3";
+
+        defaultSprite = GetComponent<SpriteRenderer>().sprite;
+    }
+
     private void ResetSpriteAngle() {
         spriteRenderer.sprite = defaultSprite;
     }
@@ -62,22 +69,23 @@ public class Player : Unit
         SceneManager.LoadScene("MainMenu");
     }
 
+    private void ResetHit()
+    {
+        isHit = false;
+    }
+
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (!isHit && other.gameObject.CompareTag("Enemy"))
         {
             // TODO: Add some knackback effect or something.
             isHit = true;
-            Invoke("ResetHit", 1.75f);
-            GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity);
+            Invoke("ResetHit", 1f);
+            GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity); // Move to take dmg?
             Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);
-            TakeDamage(1);
+            TakeDamage(other.gameObject, 1);
             UpdateHealthText();
         }
     }
 
-    private void ResetHit()
-    {
-        isHit = false;
-    }
 }

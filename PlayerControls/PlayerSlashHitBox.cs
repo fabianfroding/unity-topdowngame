@@ -6,7 +6,7 @@ public class PlayerSlashHitBox : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            other.GetComponent<Unit>().TakeDamage(1);
+            other.GetComponent<Unit>().TakeDamage(gameObject, 1);
         }
     }
 }
