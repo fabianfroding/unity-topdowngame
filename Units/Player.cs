@@ -15,7 +15,11 @@ public class Player : Unit
     //==================== PUBLIC ====================//
     public override void TakeDamage(GameObject source, int amount)
     {
-        GetComponent<TimeStop>().StopTime(0.05f, 10, 1f);
+        GetComponent<TimeStop>().StopTime(0.05f, 10, 2f);
+        if (GetComponent<PlayerController2>().GetState() == PlayerController2.State.Dashing)
+        {
+            GetComponent<PlayerController2>().SetState(PlayerController2.State.Normal);
+        }
         base.TakeDamage(source, amount);
     }
 
@@ -24,12 +28,6 @@ public class Player : Unit
         spriteRenderer.enabled = false;
         GetComponent<CircleCollider2D>().enabled = false;
         Invoke("GameOver", 3f);
-    }
-
-    public void UpdateHealthText()
-    {
-        int currHealth = health <= 0 ? 0 : health;
-        healthTextMesh.text = "Health: " + currHealth + "/3";
     }
 
     public void SetSpriteAngle(Vector3 vec)
@@ -55,7 +53,6 @@ public class Player : Unit
     {
         base.Start();
         health = 4;
-        healthTextMesh.text = "Health: " + health + "/3";
 
         defaultSprite = GetComponent<SpriteRenderer>().sprite;
     }
@@ -84,7 +81,6 @@ public class Player : Unit
             GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity); // Move to take dmg?
             Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);
             TakeDamage(other.gameObject, 1);
-            UpdateHealthText();
         }
     }
 

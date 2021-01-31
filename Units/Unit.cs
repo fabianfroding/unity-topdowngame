@@ -49,7 +49,7 @@ public class Unit : MonoBehaviour
 
     private IEnumerator Knockback(GameObject src, float duration, float power)
     {
-        if (CompareTag("Player") && !GetComponent<PlayerController2>().HasJumped())
+        if (CompareTag("Player") && GetComponent<PlayerController2>().IsGrounded())
         {
             power *= 10f;
         }

@@ -3,9 +3,10 @@
 public class PlayerController2 : MonoBehaviour
 {
     private const float MOVE_SPEED = 8f;
-    private const float JUMP_SPEED = 3f;
+    private const float JUMP_SPEED = 12.5f;
     private const float JUMP_FALL_MULTIPLIER = 2f;
     private const float JUMP_LOW_MULTIPLIER = 1.5f;
+    private const float JUMP_TIME_MAX = 0.35f;
     private const KeyCode KEY_CODE_DASH = KeyCode.O;
 
     public static bool isEnabled = true;
@@ -14,26 +15,52 @@ public class PlayerController2 : MonoBehaviour
     [SerializeField] private GameObject slashHitBoxRight;
     [SerializeField] private GameObject slashUpHitBox;
     [SerializeField] private GameObject swingSoundRef;
+    [SerializeField] private GameObject dashEffect;
+    [SerializeField] Transform groundCheck;
+    [SerializeField] Transform groundCheckLeft;
+    [SerializeField] Transform groundCheckRight;
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
     private Vector2 moveDir;
     private Vector3 dashDir;
-    private bool hasJumped = false;
+    private bool isGrounded;
+    private bool isJumping = false;
     private bool facingLeft = true;
     private bool attackOnCD = false;
     private float dashSpeed;
     private float defGravity;
+    private float jumpTimeCounter;
     private State state;
 
-    private enum State
+    public enum State
     {
         Normal,
         Dashing,
     }
 
     //==================== PUBLIC ====================//
+    public bool IsGrounded()
+    {
+        return isGrounded;
+    }
+
+    public State GetState()
+    {
+        return state;
+    }
+
+    public void SetState(State newState)
+    {
+        if (state == State.Dashing && newState != State.Dashing)
+        {
+            rb.gravityScale = defGravity;
+        }
+        state = newState;
+    }
+
+    //==================== PRIVATE ====================//
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -43,12 +70,6 @@ public class PlayerController2 : MonoBehaviour
         state = State.Normal;
     }
 
-    public bool HasJumped()
-    {
-        return hasJumped;
-    }
-
-    //==================== PRIVATE ====================//
     private void FixedUpdate()
     {
         if (isEnabled && GetComponent<Player>().health > 0)
@@ -59,6 +80,17 @@ public class PlayerController2 : MonoBehaviour
 
     private void Update()
     {
+        if (Physics2D.Linecast(transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Ground")) ||
+            Physics2D.Linecast(transform.position, groundCheckLeft.position, 1 << LayerMask.NameToLayer("Ground")) ||
+            Physics2D.Linecast(transform.position, groundCheckRight.position, 1 << LayerMask.NameToLayer("Ground")))
+        {
+            isGrounded = true;
+        }
+        else
+        {
+            isGrounded = false;
+        }
+
         if (isEnabled && GetComponent<Player>().health > 0)
         {
             ProcessInputs();
@@ -76,10 +108,29 @@ public class PlayerController2 : MonoBehaviour
                 SetFacing(x);
 
                 //----- Jump -----//
-                if (!hasJumped && Input.GetKeyDown(KeyCode.Space))
+                if (isGrounded && Input.GetKeyDown(KeyCode.Space))
                 {
-                    hasJumped = true;
-                    rb.velocity = new Vector2(rb.velocity.x * 2f, 1) * JUMP_SPEED * MOVE_SPEED; // TODO: Move to Move()
+                    isJumping = true;
+                    jumpTimeCounter = JUMP_TIME_MAX;
+                    rb.velocity = new Vector2(rb.velocity.x * 0.8f, 1) * JUMP_SPEED; // TODO: Move to Move()
+                }
+
+                if (Input.GetKey(KeyCode.Space) && isJumping)
+                {
+                    if (jumpTimeCounter > 0)
+                    {
+                        rb.velocity = new Vector2(rb.velocity.x * 0.8f, 1) * JUMP_SPEED; // TODO: Move to Move()
+                        jumpTimeCounter -= Time.deltaTime;
+                    }
+                    else
+                    {
+                        isJumping = false;
+                    }
+                }
+
+                if (Input.GetKeyUp(KeyCode.Space))
+                {
+                    isJumping = false;
                 }
 
                 //----- Attack -----//
@@ -105,6 +156,7 @@ public class PlayerController2 : MonoBehaviour
                 //----- Dash -----//
                 if (Input.GetKeyDown(KEY_CODE_DASH))
                 {
+                    isJumping = false;
                     dashDir = GetInputDirection();
                     if (dashDir != (Vector3)Vector2.up && ((Vector2)dashDir == Vector2.zero || rb.velocity == Vector2.zero))
                     {
@@ -117,6 +169,7 @@ public class PlayerController2 : MonoBehaviour
                             dashDir = new Vector2(-1, 0);
                         }
                     }
+                    DashEffect.CreateDashEffect(transform.position, -dashDir, Vector3.Distance(transform.position, dashDir), dashEffect.transform);
                     dashSpeed = MOVE_SPEED * 3;
                     rb.gravityScale = 0;
                     state = State.Dashing;
@@ -124,12 +177,11 @@ public class PlayerController2 : MonoBehaviour
                 break;
             case State.Dashing:
                 float dashSpeedDropMultiplier = 2f;
-                if (rb.velocity.y > 0) dashSpeedDropMultiplier = 3.5f;
-                else if (rb.velocity.y < 0) dashSpeedDropMultiplier = 0f;
+                if (rb.velocity.y > 0) dashSpeedDropMultiplier = 3f;
                 dashSpeed -= dashSpeed * dashSpeedDropMultiplier * Time.deltaTime;
 
                 float dashSpeedMinimum = MOVE_SPEED;
-                if (dashSpeed < dashSpeedMinimum)
+                if (dashSpeed < dashSpeedMinimum || state == State.Normal)
                 {
                     rb.gravityScale = defGravity;
                     state = State.Normal;
@@ -148,14 +200,12 @@ public class PlayerController2 : MonoBehaviour
                 rb.velocity = new Vector2(moveDir.x * MOVE_SPEED, rb.velocity.y);
 
                 //----- Jump -----//
-                if (rb.velocity.y < 0)
+                if (rb.velocity.y < 0 && !isJumping)
                 {
-                    //Debug.Log("vel<0");
                     rb.velocity += new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * (JUMP_FALL_MULTIPLIER - 1) * Time.deltaTime;
                 }
-                else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.Space))
+                else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.Space) && !isJumping)
                 {
-                    //Debug.Log("vel>0");
                     rb.velocity += new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * (JUMP_LOW_MULTIPLIER - 1) * Time.deltaTime;
                 }
 
@@ -241,14 +291,11 @@ public class PlayerController2 : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Ground"))
         {
-            Debug.Log("Collide with ground.");
-            hasJumped = false;
-
-            // Change to cancel dash on collision with all environment objects, not just ground.
+            // Change to cancel on collision with all environment objects, not just ground.
+            isJumping = false;
             if (state == State.Dashing)
             {
-                rb.gravityScale = defGravity;
-                state = State.Normal;
+                SetState(State.Normal);
             }
         }
     }

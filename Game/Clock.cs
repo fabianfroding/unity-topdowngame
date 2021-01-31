@@ -21,7 +21,7 @@ public class Clock : MonoBehaviour
 
     [SerializeField] private GameObject godsEye;
 
-    private const float SEC_PER_DAY = 10f;//1039.8f;
+    private const float SEC_PER_DAY = 1039.8f;
     private Transform transform;
     private static float day;
 
