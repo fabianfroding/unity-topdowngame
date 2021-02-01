@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Enemy : Unit
+public class EnemyRedBlob : Unit
 {
     [SerializeField] private GameObject enemyProjectile;
     [SerializeField] private AudioSource aggroSound;

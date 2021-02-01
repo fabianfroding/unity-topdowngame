@@ -4,8 +4,8 @@ public class PlayerController2 : MonoBehaviour
 {
     private const float MOVE_SPEED = 8f;
     private const float JUMP_SPEED = 12.5f;
-    private const float JUMP_FALL_MULTIPLIER = 2f;
-    private const float JUMP_LOW_MULTIPLIER = 1.5f;
+    private const float JUMP_FALL_MULTIPLIER = 1f;
+    private const float JUMP_LOW_MULTIPLIER = 0.5f;
     private const float JUMP_TIME_MAX = 0.35f;
     private const KeyCode KEY_CODE_DASH = KeyCode.O;
 
@@ -16,9 +16,8 @@ public class PlayerController2 : MonoBehaviour
     [SerializeField] private GameObject slashUpHitBox;
     [SerializeField] private GameObject swingSoundRef;
     [SerializeField] private GameObject dashEffect;
-    [SerializeField] Transform groundCheck;
-    [SerializeField] Transform groundCheckLeft;
-    [SerializeField] Transform groundCheckRight;
+    [SerializeField] Transform[] groundCheck;
+    [SerializeField] Transform[] sideCollisionCheck;
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
@@ -27,6 +26,7 @@ public class PlayerController2 : MonoBehaviour
     private Vector3 dashDir;
     private bool isGrounded;
     private bool isJumping = false;
+    private bool isColliding;
     private bool facingLeft = true;
     private bool attackOnCD = false;
     private float dashSpeed;
@@ -53,10 +53,7 @@ public class PlayerController2 : MonoBehaviour
 
     public void SetState(State newState)
     {
-        if (state == State.Dashing && newState != State.Dashing)
-        {
-            rb.gravityScale = defGravity;
-        }
+        if (state == State.Dashing && newState != State.Dashing) rb.gravityScale = defGravity;
         state = newState;
     }
 
@@ -72,29 +69,38 @@ public class PlayerController2 : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (isEnabled && GetComponent<Player>().health > 0)
-        {
-            Move();
-        }
+        if (isEnabled && GetComponent<Player>().health > 0) Move();
     }
 
     private void Update()
     {
-        if (Physics2D.Linecast(transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Ground")) ||
-            Physics2D.Linecast(transform.position, groundCheckLeft.position, 1 << LayerMask.NameToLayer("Ground")) ||
-            Physics2D.Linecast(transform.position, groundCheckRight.position, 1 << LayerMask.NameToLayer("Ground")))
+        //----- Check Ground Collision -----//
+        bool b = false;
+        for (int i = 0; i < groundCheck.Length; i++)
         {
-            isGrounded = true;
+            if (Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer("Ground")))
+            {
+                b = true;
+                break;
+            }
         }
-        else
-        {
-            isGrounded = false;
-        }
+        if (b) isGrounded = true;
+        else isGrounded = false;
 
-        if (isEnabled && GetComponent<Player>().health > 0)
+        //----- Check Side Collision -----//
+        b = false;
+        for (int i = 0; i < sideCollisionCheck.Length; i++)
         {
-            ProcessInputs();
+            if (Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Ground")))
+            {
+                b = true;
+                break;
+            }
         }
+        if (b) isColliding = true;
+        else isColliding = false;
+
+        if (isEnabled && GetComponent<Player>().health > 0) ProcessInputs();
     }
 
     private void ProcessInputs()
@@ -122,16 +128,10 @@ public class PlayerController2 : MonoBehaviour
                         rb.velocity = new Vector2(rb.velocity.x * 0.8f, 1) * JUMP_SPEED; // TODO: Move to Move()
                         jumpTimeCounter -= Time.deltaTime;
                     }
-                    else
-                    {
-                        isJumping = false;
-                    }
+                    else isJumping = false;
                 }
 
-                if (Input.GetKeyUp(KeyCode.Space))
-                {
-                    isJumping = false;
-                }
+                if (Input.GetKeyUp(KeyCode.Space)) isJumping = false;
 
                 //----- Attack -----//
                 if (!attackOnCD && Input.GetKeyDown(KeyCode.K))
@@ -160,14 +160,7 @@ public class PlayerController2 : MonoBehaviour
                     dashDir = GetInputDirection();
                     if (dashDir != (Vector3)Vector2.up && ((Vector2)dashDir == Vector2.zero || rb.velocity == Vector2.zero))
                     {
-                        if (facingLeft)
-                        {
-                            dashDir = new Vector2(1, 0);
-                        }
-                        else
-                        {
-                            dashDir = new Vector2(-1, 0);
-                        }
+                        dashDir = (facingLeft) ? new Vector2(1, 0) : new Vector2(-1, 0);
                     }
                     DashEffect.CreateDashEffect(transform.position, -dashDir, Vector3.Distance(transform.position, dashDir), dashEffect.transform);
                     dashSpeed = MOVE_SPEED * 3;
@@ -188,7 +181,6 @@ public class PlayerController2 : MonoBehaviour
                 }
                 break;
         }
-        
     }
 
     private void Move()
@@ -197,25 +189,21 @@ public class PlayerController2 : MonoBehaviour
         {
             case State.Normal:
                 //----- Move -----//
-                rb.velocity = new Vector2(moveDir.x * MOVE_SPEED, rb.velocity.y);
+                rb.velocity = new Vector2((!isGrounded && isColliding) ? 0 : moveDir.x * MOVE_SPEED, rb.velocity.y);
 
                 //----- Jump -----//
                 if (rb.velocity.y < 0 && !isJumping)
-                {
-                    rb.velocity += new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * (JUMP_FALL_MULTIPLIER - 1) * Time.deltaTime;
-                }
-                else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.Space) && !isJumping)
-                {
-                    rb.velocity += new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * (JUMP_LOW_MULTIPLIER - 1) * Time.deltaTime;
-                }
-
+                    rb.velocity += new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * JUMP_FALL_MULTIPLIER * Time.deltaTime;
+                else if (rb.velocity.y > 0 && !isJumping)
+                    rb.velocity += new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * JUMP_LOW_MULTIPLIER * Time.deltaTime;
+                else if (rb.velocity.y > 0 && isJumping)
+                    rb.velocity -= new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * JUMP_LOW_MULTIPLIER * Time.deltaTime;
                 break;
             case State.Dashing:
                 //----- Dash -----//
                 rb.velocity = dashDir * dashSpeed;
                 break;
         }
-        
     }
 
     private void SetFacing(float xVelocity)
@@ -236,45 +224,28 @@ public class PlayerController2 : MonoBehaviour
     {
         // North
         if (Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-        {
             return new Vector2(0, 1);
-        }
         // Northeast
         else if (Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
-        {
             return new Vector2(1, 1).normalized;
-        }
         // East
         else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
-        {
             return new Vector2(1, 0);
-        }
         // Southeast
         else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
-        {
             return new Vector2(1, -1).normalized;
-        }
         // South
         else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-        {
             return new Vector2(0, -1);
-        }
         // Southwest
         else if (!Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-        {
             return new Vector2(-1, -1).normalized;
-        }
         // West
         else if (!Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-        {
             return new Vector2(-1, 0);
-        }
         // Northwest
         else if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-        {
             return new Vector2(-1, 1).normalized;
-        }
-
         return Vector2.zero;
     }
 
@@ -291,12 +262,9 @@ public class PlayerController2 : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Ground"))
         {
-            // Change to cancel on collision with all environment objects, not just ground.
+            // Change to cancel on collision with all environment objects, not just ground. (Or do we really need to?)
             isJumping = false;
-            if (state == State.Dashing)
-            {
-                SetState(State.Normal);
-            }
+            if (state == State.Dashing) SetState(State.Normal);
         }
     }
 }

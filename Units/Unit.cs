@@ -5,7 +5,6 @@ public class Unit : MonoBehaviour
 {
     public int health;
     public float moveSpeed;
-    public bool isGrounded = true;
     protected SpriteRenderer spriteRenderer;
     protected Rigidbody2D rb;
     private Material matDefault;

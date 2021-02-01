@@ -32,7 +32,7 @@ public class Projectile : MonoBehaviour
             (source.CompareTag("Enemy") && col.CompareTag("Player")))
         {
             col.GetComponent<Unit>().TakeDamage(source, 1);
-            if (col.CompareTag("Enemy")) col.GetComponent<Enemy>().FaceTarget(source);
+            if (col.CompareTag("Enemy")) col.GetComponent<EnemyRedBlob>().FaceTarget(source);
             DestroySelf();
         }
         else if (col.CompareTag("Environment"))

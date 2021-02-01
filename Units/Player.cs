@@ -15,11 +15,9 @@ public class Player : Unit
     //==================== PUBLIC ====================//
     public override void TakeDamage(GameObject source, int amount)
     {
-        GetComponent<TimeStop>().StopTime(0.05f, 10, 2f);
+        GetComponent<TimeStop>().StopTime(0.1f, 10, 2f);
         if (GetComponent<PlayerController2>().GetState() == PlayerController2.State.Dashing)
-        {
             GetComponent<PlayerController2>().SetState(PlayerController2.State.Normal);
-        }
         base.TakeDamage(source, amount);
     }
 
