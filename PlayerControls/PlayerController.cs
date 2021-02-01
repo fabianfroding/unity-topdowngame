@@ -2,66 +2,105 @@
 
 public class PlayerController : MonoBehaviour
 {
-    public static PlayerController instance;
+    private const float MOVE_SPEED = 8f;
+    private const float JUMP_SPEED = 12.5f;
+    private const float JUMP_FALL_MULTIPLIER = 1f;
+    private const float JUMP_LOW_MULTIPLIER = 0.5f;
+    private const float JUMP_TIME_MAX = 0.35f;
+    private const KeyCode KEY_CODE_DASH = KeyCode.O;
 
-    public float moveSpeed;
-    public Rigidbody2D rb;
+    public static bool isEnabled = true;
 
-    public GameObject bulletRef;
+    [SerializeField] private GameObject slashHitBoxLeft;
+    [SerializeField] private GameObject slashHitBoxRight;
+    [SerializeField] private GameObject slashUpHitBox;
+    [SerializeField] private GameObject swingSoundRef;
+    [SerializeField] private GameObject dashEffect;
+    [SerializeField] Transform[] groundCheck;
+    [SerializeField] Transform[] sideCollisionCheck;
 
-    [SerializeField] private bool isEnabled;
-    [SerializeField] private LayerMask dashLayerMask;
-
+    private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
+    private Animator animator;
     private Vector2 moveDir;
-    private Vector3 rollDir;
-    private Vector3 lastMoveDir;
-
-    private bool attackOnCooldown;
-    private bool isDashButtonDown;
+    private Vector3 dashDir;
+    private bool isGrounded;
+    private bool isJumping = false;
+    private bool isColliding;
+    private bool facingLeft = true;
+    private bool attackOnCD = false;
+    private float dashSpeed;
+    private float defGravity;
+    private float jumpTimeCounter;
     private State state;
 
-    private float rollSpeed = 3.5f;
-
-    private enum State
+    public enum State
     {
         Normal,
-        Rolling,
+        Dashing,
     }
 
-    //========== PUBLIC METHODS ==========//
-    public void SetActive(bool flag)
+    //==================== PUBLIC ====================//
+    public bool IsGrounded()
     {
-        isEnabled = flag;
+        return isGrounded;
     }
 
-    //========== PRIVATE METHODS ==========//
-    private void Awake()
+    public State GetState()
     {
-        instance = this;
-        state = State.Normal;
+        return state;
     }
 
+    public void SetState(State newState)
+    {
+        if (state == State.Dashing && newState != State.Dashing) rb.gravityScale = defGravity;
+        state = newState;
+    }
+
+    //==================== PRIVATE ====================//
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        isEnabled = true;
-        attackOnCooldown = false;
-    }
-
-    private void Update()
-    {
-        if (isEnabled && GetComponent<Unit>().health > 0)
-        {
-            ProcessInputs();
-        }
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
+        defGravity = rb.gravityScale;
+        state = State.Normal;
     }
 
     private void FixedUpdate()
     {
-        if (GetComponent<Unit>().health > 0)
+        if (isEnabled && GetComponent<Player>().health > 0) Move();
+    }
+
+    private void Update()
+    {
+        //----- Check Ground Collision -----//
+        bool b = false;
+        for (int i = 0; i < groundCheck.Length; i++)
         {
-            Move();
+            if (Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer("Ground")))
+            {
+                b = true;
+                break;
+            }
         }
+        if (b) isGrounded = true;
+        else isGrounded = false;
+
+        //----- Check Side Collision -----//
+        b = false;
+        for (int i = 0; i < sideCollisionCheck.Length; i++)
+        {
+            if (Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Ground")))
+            {
+                b = true;
+                break;
+            }
+        }
+        if (b) isColliding = true;
+        else isColliding = false;
+
+        if (isEnabled && GetComponent<Player>().health > 0) ProcessInputs();
     }
 
     private void ProcessInputs()
@@ -69,50 +108,75 @@ public class PlayerController : MonoBehaviour
         switch (state)
         {
             case State.Normal:
+                //----- Move -----//
                 float x = Input.GetAxisRaw("Horizontal");
-                float y = Input.GetAxisRaw("Vertical");
-                moveDir = new Vector2(x, y).normalized;
+                moveDir = new Vector2(x, 0).normalized;
+                SetFacing(x);
 
-                if (x != 0 || y != 0)
+                //----- Jump -----//
+                if (isGrounded && Input.GetKeyDown(KeyCode.Space))
                 {
-                    Vector3 moveVector = Vector3.zero;
-                    moveVector.x = Input.GetAxis("Horizontal");
-                    moveVector.y = Input.GetAxis("Vertical");
-                    lastMoveDir = moveDir;
-                    GetComponent<Player>().SetSpriteAngle(moveVector);
+                    isJumping = true;
+                    jumpTimeCounter = JUMP_TIME_MAX;
+                    rb.velocity = new Vector2(rb.velocity.x * 0.8f, 1) * JUMP_SPEED; // TODO: Move to Move()
                 }
 
-                if (Input.GetMouseButtonDown(0) && !attackOnCooldown)
+                if (Input.GetKey(KeyCode.Space) && isJumping)
                 {
-                    attackOnCooldown = true;
-
-                    GameObject projectile = Instantiate(bulletRef, transform.position, Quaternion.identity);
-                    projectile.GetComponent<Projectile>().source = this.gameObject;
-                    projectile.GetComponent<Projectile>().SetDirection(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-                    projectile.GetComponent<Projectile>().InvokeDestroySelf(3f);
-
-                    Invoke("ResetAttackCooldown", 1f);
+                    if (jumpTimeCounter > 0)
+                    {
+                        rb.velocity = new Vector2(rb.velocity.x * 0.8f, 1) * JUMP_SPEED; // TODO: Move to Move()
+                        jumpTimeCounter -= Time.deltaTime;
+                    }
+                    else isJumping = false;
                 }
 
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (Input.GetKeyUp(KeyCode.Space)) isJumping = false;
+
+                //----- Attack -----//
+                if (!attackOnCD && Input.GetKeyDown(KeyCode.K))
                 {
-                    isDashButtonDown = true;
+                    attackOnCD = true;
+                    GameObject swingSound = Instantiate(swingSoundRef, transform.position, Quaternion.identity);
+                    Destroy(swingSound, swingSound.GetComponent<AudioSource>().clip.length);
+                    if (Input.GetKey(KeyCode.W))
+                    {
+                        animator.Play("PlayerAttackUp");
+                        slashUpHitBox.SetActive(true);
+                    }
+                    else
+                    {
+                        animator.Play("PlayerAttack");
+                        if (facingLeft) slashHitBoxRight.SetActive(true);
+                        else slashHitBoxLeft.SetActive(true);
+                    }
+                    Invoke("ResetAttack", 0.5f);
                 }
 
-                if (Input.GetKeyDown(KeyCode.R))
+                //----- Dash -----//
+                if (Input.GetKeyDown(KEY_CODE_DASH))
                 {
-                    rollDir = lastMoveDir;
-                    rollSpeed = 5f;
-                    state = State.Rolling;
+                    isJumping = false;
+                    dashDir = GetInputDirection();
+                    if (dashDir != (Vector3)Vector2.up && ((Vector2)dashDir == Vector2.zero || rb.velocity == Vector2.zero))
+                    {
+                        dashDir = (facingLeft) ? new Vector2(1, 0) : new Vector2(-1, 0);
+                    }
+                    DashEffect.CreateDashEffect(transform.position, -dashDir, Vector3.Distance(transform.position, dashDir), dashEffect.transform);
+                    dashSpeed = MOVE_SPEED * 3;
+                    rb.gravityScale = 0;
+                    state = State.Dashing;
                 }
                 break;
-            case State.Rolling:
-                float rollSpeedDropMultiplier = 0.5f;
-                rollSpeed -= rollSpeed * rollSpeedDropMultiplier * Time.deltaTime;
+            case State.Dashing:
+                float dashSpeedDropMultiplier = 2f;
+                if (rb.velocity.y > 0) dashSpeedDropMultiplier = 3f;
+                dashSpeed -= dashSpeed * dashSpeedDropMultiplier * Time.deltaTime;
 
-                float rollSpeedMinimum = 3.5f;
-                if (rollSpeed < rollSpeedMinimum)
+                float dashSpeedMinimum = MOVE_SPEED;
+                if (dashSpeed < dashSpeedMinimum || state == State.Normal)
                 {
+                    rb.gravityScale = defGravity;
                     state = State.Normal;
                 }
                 break;
@@ -124,34 +188,83 @@ public class PlayerController : MonoBehaviour
         switch (state)
         {
             case State.Normal:
-                rb.velocity = new Vector2(moveDir.x * moveSpeed, moveDir.y * moveSpeed);
+                //----- Move -----//
+                rb.velocity = new Vector2((!isGrounded && isColliding) ? 0 : moveDir.x * MOVE_SPEED, rb.velocity.y);
 
-                if (isDashButtonDown)
-                {
-                    float dashAmount = 3f;
-                    Vector3 dashPosition = transform.position + (Vector3)lastMoveDir * dashAmount;
-                    RaycastHit2D raycastHit2D = Physics2D.Raycast(transform.position, lastMoveDir, dashAmount, dashLayerMask);
-                    if (raycastHit2D.collider != null)
-                    {
-                        dashPosition = raycastHit2D.point;
-                    }
-
-                    // Spawn visual effect
-                    // DashEffect.CreateDashEffect(transform.position, moveDir, Vector3.Distance(transform.position, dashPosition));
-
-                    rb.MovePosition(dashPosition);
-                    isDashButtonDown = false;
-                }
+                //----- Jump -----//
+                if (rb.velocity.y < 0 && !isJumping)
+                    rb.velocity += new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * JUMP_FALL_MULTIPLIER * Time.deltaTime;
+                else if (rb.velocity.y > 0 && !isJumping)
+                    rb.velocity += new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * JUMP_LOW_MULTIPLIER * Time.deltaTime;
+                else if (rb.velocity.y > 0 && isJumping)
+                    rb.velocity -= new Vector2(rb.velocity.x, 1) * Physics2D.gravity.y * JUMP_LOW_MULTIPLIER * Time.deltaTime;
                 break;
-            case State.Rolling:
-                rb.velocity = rollDir * rollSpeed;
+            case State.Dashing:
+                //----- Dash -----//
+                rb.velocity = dashDir * dashSpeed;
                 break;
         }
-
     }
 
-    private void ResetAttackCooldown()
+    private void SetFacing(float xVelocity)
     {
-        attackOnCooldown = false;
+        if (xVelocity > 0 && !facingLeft)
+        {
+            facingLeft = true;
+            spriteRenderer.flipX = true;
+        }
+        else if (xVelocity < 0 && facingLeft)
+        {
+            facingLeft = false;
+            spriteRenderer.flipX = false;
+        }
+    }
+
+    private Vector2 GetInputDirection()
+    {
+        // North
+        if (Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
+            return new Vector2(0, 1);
+        // Northeast
+        else if (Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
+            return new Vector2(1, 1).normalized;
+        // East
+        else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
+            return new Vector2(1, 0);
+        // Southeast
+        else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
+            return new Vector2(1, -1).normalized;
+        // South
+        else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
+            return new Vector2(0, -1);
+        // Southwest
+        else if (!Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
+            return new Vector2(-1, -1).normalized;
+        // West
+        else if (!Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
+            return new Vector2(-1, 0);
+        // Northwest
+        else if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
+            return new Vector2(-1, 1).normalized;
+        return Vector2.zero;
+    }
+
+    private void ResetAttack()
+    {
+        slashHitBoxLeft.SetActive(false);
+        slashHitBoxRight.SetActive(false);
+        slashUpHitBox.SetActive(false);
+        animator.Play("PlayerIdle");
+        attackOnCD = false;
+    }
+
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Ground"))
+        {
+            // Change to cancel on collision with all environment objects, not just ground. (Or do we really need to?)
+            isJumping = false;
+            if (state == State.Dashing) SetState(State.Normal);
+        }
     }
 }

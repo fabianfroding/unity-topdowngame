@@ -18,7 +18,7 @@ public class Dialog : MonoBehaviour
     {
         UIManager.instance.HealthUISetActive(false);
         UIManager.instance.ClockUISetActive(false);
-        PlayerController2.isEnabled = false;
+        PlayerController.isEnabled = false;
 
         // TODO: Find a way to prevent enemy combat during dialog.
 
@@ -69,7 +69,7 @@ public class Dialog : MonoBehaviour
 
         UIManager.instance.HealthUISetActive(true);
         UIManager.instance.ClockUISetActive(true);
-        PlayerController2.isEnabled = true;
+        PlayerController.isEnabled = true;
 
         active = false;
     }

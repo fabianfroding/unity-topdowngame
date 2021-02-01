@@ -48,14 +48,11 @@ public class Unit : MonoBehaviour
 
     private IEnumerator Knockback(GameObject src, float duration, float power)
     {
-        if (CompareTag("Player") && GetComponent<PlayerController2>().IsGrounded())
-        {
+        if (CompareTag("Player") && GetComponent<PlayerController>().IsGrounded())
             power *= 10f;
-        }
         else if (CompareTag("Enemy") && rb.gravityScale > 0)
-        {
             power *= 100f;
-        }
+
         float timer = 0;
         while (duration > timer)
         {
@@ -63,7 +60,6 @@ public class Unit : MonoBehaviour
             Vector2 dir = (transform.position - src.transform.position);
             rb.AddForce(dir * power);
         }
-
         yield return 0;
     }
 }

@@ -1,12 +1,8 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Player : Unit
 {
-    [SerializeField] private TextMeshProUGUI healthTextMesh;
-    [SerializeField] private Camera cam;
-    [SerializeField] private Sprite[] sprite;
     [SerializeField] private GameObject hitSoundRef;
 
     private Sprite defaultSprite;
@@ -16,34 +12,18 @@ public class Player : Unit
     public override void TakeDamage(GameObject source, int amount)
     {
         GetComponent<TimeStop>().StopTime(0.1f, 10, 2f);
-        if (GetComponent<PlayerController2>().GetState() == PlayerController2.State.Dashing)
-            GetComponent<PlayerController2>().SetState(PlayerController2.State.Normal);
+        if (GetComponent<PlayerController>().GetState() == PlayerController.State.Dashing)
+            GetComponent<PlayerController>().SetState(PlayerController.State.Normal);
         base.TakeDamage(source, amount);
     }
 
     public override void DestroySelf(float delay = 0f)
     {
         spriteRenderer.enabled = false;
-        GetComponent<CircleCollider2D>().enabled = false;
-        Invoke("GameOver", 3f);
-    }
-
-    public void SetSpriteAngle(Vector3 vec)
-    {
-        float angle = Vector3.Angle(vec, Vector3.right) * -Vector3.Cross(vec, Vector3.right).normalized.z;
-        int spriteIndex = 0;
-        if (angle >= 67.5 && angle < 112.5) spriteIndex = 0;
-        else if (angle >= 22.5 && angle < 67.5) spriteIndex = 1;
-        else if (vec.x == 1 && (angle >= -22.5 && angle < 22.5)) spriteIndex = 2;
-        else if (angle >= -67.5 && angle < -22.5) spriteIndex = 3;
-        else if (angle >= -112.5 && angle < -67.5) spriteIndex = 4;
-        else if (angle >= -157.5 && angle < -112.5) spriteIndex = 5;
-        else if (vec.x == -1 && (angle < 22.5 || angle < -157.5)) spriteIndex = 6;
-        else if (angle >= 112.5 && angle < 157.5) spriteIndex = 7;
-        else ResetSpriteAngle();
-
-        spriteRenderer.sprite = sprite[spriteIndex];
-        defaultSprite = sprite[spriteIndex];
+        GetComponent<BoxCollider2D>().enabled = false;
+        GetComponent<CapsuleCollider2D>().enabled = false;
+        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+        Invoke("Revive", 4f); //Invoke("GameOver", 3f);
     }
 
     //==================== PRIVATE ====================//
@@ -51,7 +31,6 @@ public class Player : Unit
     {
         base.Start();
         health = 4;
-
         defaultSprite = GetComponent<SpriteRenderer>().sprite;
     }
 
@@ -64,6 +43,16 @@ public class Player : Unit
         SceneManager.LoadScene("MainMenu");
     }
 
+    private void Revive()
+    {
+        transform.position = RevivePoint.revivePoint.transform.position;
+        spriteRenderer.enabled = true;
+        GetComponent<BoxCollider2D>().enabled = true;
+        GetComponent<CapsuleCollider2D>().enabled = true;
+        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+        health = 3;
+    }
+
     private void ResetHit()
     {
         isHit = false;
@@ -73,7 +62,6 @@ public class Player : Unit
     {
         if (!isHit && other.gameObject.CompareTag("Enemy"))
         {
-            // TODO: Add some knackback effect or something.
             isHit = true;
             Invoke("ResetHit", 1f);
             GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity); // Move to take dmg?
