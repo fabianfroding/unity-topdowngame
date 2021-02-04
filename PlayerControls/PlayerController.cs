@@ -16,23 +16,24 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject slashUpHitBox;
     [SerializeField] private GameObject swingSoundRef;
     [SerializeField] private GameObject dashEffect;
-    [SerializeField] Transform[] groundCheck;
-    [SerializeField] Transform[] sideCollisionCheck;
+    [SerializeField] private Transform[] groundCheck;
+    [SerializeField] private Transform[] sideCollisionCheck;
 
-    private Rigidbody2D rb;
+    private static Rigidbody2D rb;
+    private static Vector2 moveDir;
+    private static float defGravity;
+    private static bool isJumping = false;
+    private static bool isGrounded;
+    private static bool attackOnCD = false; // This can also be flag for while attacking.
+    private static State state;
+
     private SpriteRenderer spriteRenderer;
     private Animator animator;
-    private Vector2 moveDir;
     private Vector3 dashDir;
-    private bool isGrounded;
-    private bool isJumping = false;
     private bool isColliding;
     private bool facingLeft = true;
-    private bool attackOnCD = false;
     private float dashSpeed;
-    private float defGravity;
     private float jumpTimeCounter;
-    private State state;
 
     public enum State
     {
@@ -46,15 +47,25 @@ public class PlayerController : MonoBehaviour
         return isGrounded;
     }
 
-    public State GetState()
+    public static State GetState()
     {
         return state;
     }
 
-    public void SetState(State newState)
+    public static void SetState(State newState)
     {
         if (state == State.Dashing && newState != State.Dashing) rb.gravityScale = defGravity;
         state = newState;
+    }
+
+    public static bool isIdle()
+    {
+        return moveDir.x == 0 &&
+            moveDir.y == 0 &&
+            state == State.Normal &&
+            !isJumping &&
+            isGrounded &&
+            !attackOnCD;
     }
 
     //==================== PRIVATE ====================//
@@ -74,33 +85,27 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        //----- Check Ground Collision -----//
-        bool b = false;
+        isGrounded = CheckGroundCollision();
+        isColliding = CheckSideCollision();
+        if (isEnabled && GetComponent<Player>().health > 0) ProcessInputs();
+    }
+
+    private bool CheckGroundCollision()
+    {
         for (int i = 0; i < groundCheck.Length; i++)
         {
-            if (Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer("Ground")))
-            {
-                b = true;
-                break;
-            }
+            if (Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer("Ground"))) return true;
         }
-        if (b) isGrounded = true;
-        else isGrounded = false;
+        return false;
+    }
 
-        //----- Check Side Collision -----//
-        b = false;
+    private bool CheckSideCollision()
+    {
         for (int i = 0; i < sideCollisionCheck.Length; i++)
         {
-            if (Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Ground")))
-            {
-                b = true;
-                break;
-            }
+            if (Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Ground"))) return true;
         }
-        if (b) isColliding = true;
-        else isColliding = false;
-
-        if (isEnabled && GetComponent<Player>().health > 0) ProcessInputs();
+        return false;
     }
 
     private void ProcessInputs()
@@ -112,6 +117,11 @@ public class PlayerController : MonoBehaviour
                 float x = Input.GetAxisRaw("Horizontal");
                 moveDir = new Vector2(x, 0).normalized;
                 SetFacing(x);
+                if (isGrounded && x != 0)
+                {
+                    animator.Play("PlayerWalk");
+                }
+                else if (!attackOnCD) animator.Play("PlayerIdle");
 
                 //----- Jump -----//
                 if (isGrounded && Input.GetKeyDown(KeyCode.Space))
@@ -211,12 +221,12 @@ public class PlayerController : MonoBehaviour
         if (xVelocity > 0 && !facingLeft)
         {
             facingLeft = true;
-            spriteRenderer.flipX = true;
+            spriteRenderer.flipX = false;
         }
         else if (xVelocity < 0 && facingLeft)
         {
             facingLeft = false;
-            spriteRenderer.flipX = false;
+            spriteRenderer.flipX = true;
         }
     }
 

@@ -23,7 +23,7 @@ public class Unit : MonoBehaviour
             DestroySelf();
         }
 
-        StartCoroutine(Knockback(src, 1, 15));
+        //StartCoroutine(Knockback(src, 1, 15)); Move somewhere else, all dmg does not knockback.
     }
 
     public virtual void DestroySelf(float delay = 0f)
@@ -46,7 +46,7 @@ public class Unit : MonoBehaviour
         spriteRenderer.material = matDefault;
     }
 
-    private IEnumerator Knockback(GameObject src, float duration, float power)
+    /*private IEnumerator Knockback(GameObject src, float duration, float power)
     {
         if (CompareTag("Player") && GetComponent<PlayerController>().IsGrounded())
             power *= 10f;
@@ -61,5 +61,5 @@ public class Unit : MonoBehaviour
             rb.AddForce(dir * power);
         }
         yield return 0;
-    }
+    }*/
 }

@@ -15,7 +15,7 @@ public class NPC : MonoBehaviour
     {
         if (playerInRange)
         {
-            if (Input.GetKey(KeyCode.E) && !dialog1.isActive())
+            if (Input.GetKey(KeyCode.E) && !dialog1.isActive() && PlayerController.isIdle())
             {
                 Debug.Log("Start dialog with " + this.gameObject.name);
                 dialog1.StartDialog();
