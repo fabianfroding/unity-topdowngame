@@ -18,13 +18,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject dashEffect;
     [SerializeField] private Transform[] groundCheck;
     [SerializeField] private Transform[] sideCollisionCheck;
+    [SerializeField] private Transform[] upCollisionCheck;
 
     private static Rigidbody2D rb;
     private static Vector2 moveDir;
+    private static Player player;
     private static float defGravity;
     private static bool isJumping = false;
     private static bool isGrounded;
     private static bool attackOnCD = false; // This can also be flag for while attacking.
+    private static bool invulnerable = false;
     private static State state;
 
     private SpriteRenderer spriteRenderer;
@@ -74,13 +77,27 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        player = GetComponent<Player>();
         defGravity = rb.gravityScale;
         state = State.Normal;
     }
 
     private void FixedUpdate()
     {
-        if (isEnabled && GetComponent<Player>().health > 0) Move();
+        if (isEnabled && GetComponent<Player>().health > 0)
+        {
+            if (!invulnerable)
+            {
+                GameObject collidingEnemy = CheckEnemyCollision();
+                if (collidingEnemy != null)
+                {
+                    invulnerable = true;
+                    Invoke("ResetInvulnerability", 1f);
+                    player.TakeDamage(collidingEnemy, 1);
+                }
+            }
+            Move(); // TODO: Do not allow movement if player is being knockbacked.
+        }
     }
 
     private void Update()
@@ -106,6 +123,33 @@ public class PlayerController : MonoBehaviour
             if (Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Ground"))) return true;
         }
         return false;
+    }
+
+    private GameObject CheckEnemyCollision()
+    {
+        // Reuse ground and side checks but on different layer to identify enemies.
+        RaycastHit2D hit;
+        for (int i = 0; i < sideCollisionCheck.Length; i++)
+        {
+            hit = Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
+            if (hit) return hit.collider.gameObject;
+        }
+        for (int i = 0; i < groundCheck.Length; i++)
+        {
+            hit = Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
+            if (hit) return hit.collider.gameObject;
+        }
+        for (int i = 0; i < upCollisionCheck.Length; i++)
+        {
+            hit = Physics2D.Linecast(transform.position, upCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
+            if (hit) return hit.collider.gameObject;
+        }
+        return null;
+    }
+
+    private void ResetInvulnerability()
+    {
+        invulnerable = false;
     }
 
     private void ProcessInputs()

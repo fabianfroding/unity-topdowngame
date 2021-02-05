@@ -12,6 +12,8 @@ public class Player : Unit
     public override void TakeDamage(GameObject source, int amount)
     {
         GetComponent<TimeStop>().StopTime(0.1f, 10, 2f);
+        GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity);
+        Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);
         if (PlayerController.GetState() == PlayerController.State.Dashing)
             PlayerController.SetState(PlayerController.State.Normal);
         base.TakeDamage(source, amount);
@@ -52,22 +54,4 @@ public class Player : Unit
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
         health = 3;
     }
-
-    private void ResetHit()
-    {
-        isHit = false;
-    }
-
-    private void OnCollisionEnter2D(Collision2D other)
-    {
-        if (!isHit && other.gameObject.CompareTag("Enemy"))
-        {
-            isHit = true;
-            Invoke("ResetHit", 1f);
-            GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity); // Move to take dmg?
-            Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);
-            TakeDamage(other.gameObject, 1);
-        }
-    }
-
 }
