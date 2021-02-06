@@ -18,7 +18,7 @@ public class EnemyRedBlob : Unit
         rb.rotation = angle;
     }
 
-    //==================== PUBLIC ====================//
+    //==================== PRIVATE ====================//
     protected override void Start()
     {
         base.Start();

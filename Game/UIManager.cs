@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private GameObject ClockUI;
     [SerializeField] private GameObject HealthUI;
+    [SerializeField] private GameObject InventoryUI;
     [SerializeField] private GameObject player; // TODO: Remove and make player hp static.
     [SerializeField] private int numOfTears;
     [SerializeField] private Image[] tears;
@@ -32,31 +33,42 @@ public class UIManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        int hp = player.GetComponent<Player>().health;
-        if (hp > numOfTears)
+        SetHealthUI();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F))
         {
-            hp = numOfTears;
+            if (!InventoryUI.activeSelf)
+            {
+                InventoryUI.SetActive(true);
+                HealthUI.SetActive(false);
+                ClockUI.SetActive(false);
+                PlayerController.isEnabled = false;
+            }
+            else
+            {
+                InventoryUI.SetActive(false);
+                HealthUI.SetActive(true);
+                ClockUI.SetActive(true);
+                PlayerController.isEnabled = true;
+            }
         }
+    }
+
+    private void SetHealthUI()
+    {
+        int hp = player.GetComponent<Player>().health;
+        if (hp > numOfTears) hp = numOfTears;
 
         for (int i = 0; i < tears.Length; i++)
         {
-            if (i < hp)
-            {
-                tears[i].sprite = tearFilled;
-            }
-            else
-            {
-                tears[i].sprite = tearEmpty;
-            }
+            if (i < hp) tears[i].sprite = tearFilled;
+            else tears[i].sprite = tearEmpty;
 
-            if (i < numOfTears)
-            {
-                tears[i].enabled = true;
-            }
-            else
-            {
-                tears[i].enabled = false;
-            }
+            if (i < numOfTears) tears[i].enabled = true;
+            else tears[i].enabled = false;
         }
     }
 }

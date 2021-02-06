@@ -84,6 +84,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isEnabled && GetComponent<Player>().health > 0)
         {
+            Move(); // TODO: Do not allow movement if player is being knockbacked.
             if (!player.invulnerable)
             {
                 GameObject collidingEnemy = CheckEnemyCollision();
@@ -92,7 +93,6 @@ public class PlayerController : MonoBehaviour
                     player.TakeDamage(collidingEnemy, 1);
                 }
             }
-            Move(); // TODO: Do not allow movement if player is being knockbacked.
         }
     }
 
