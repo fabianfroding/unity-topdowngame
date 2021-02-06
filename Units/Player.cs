@@ -1,22 +1,51 @@
-﻿using UnityEngine;
-using UnityEngine.SceneManagement;
+﻿using System.Collections;
+using UnityEngine;
 
 public class Player : Unit
 {
-    [SerializeField] private GameObject hitSoundRef;
+    public bool barrierOnCD = false;
 
-    private Sprite defaultSprite;
-    private bool isHit = false;
+    [SerializeField] private GameObject barrier;
+    [SerializeField] private GameObject hitSoundRef;
+    [SerializeField] private GameObject barrierSoundRef;
+    [SerializeField] private GameObject barrierEndSoundRef;
 
     //==================== PUBLIC ====================//
-    public override void TakeDamage(GameObject source, int amount)
+    public void BarrierStart()
     {
-        GetComponent<TimeStop>().StopTime(0.1f, 10, 2f);
-        GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity);
-        Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);
-        if (PlayerController.GetState() == PlayerController.State.Dashing)
-            PlayerController.SetState(PlayerController.State.Normal);
-        base.TakeDamage(source, amount);
+        barrierOnCD = true;
+        barrier.SetActive(true);
+        GameObject sound = Instantiate(barrierSoundRef, barrier.transform.position, Quaternion.identity);
+        Destroy(sound, sound.GetComponent<AudioSource>().clip.length);
+        StartCoroutine(BarrierEnd(1.5f, true));
+    }
+
+    public override void TakeDamage(GameObject source, int amt)
+    {
+        if (!invulnerable && !barrier.activeSelf && source.CompareTag("Enemy"))
+        {
+            invulnerable = true;
+            GetComponent<TimeStop>().StopTime(0.1f, 10, 2f);
+            GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity);
+            Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);
+            if (PlayerController.GetState() == PlayerController.State.Dashing)
+                PlayerController.SetState(PlayerController.State.Normal);
+            base.TakeDamage(source, amt);
+            Invoke("ResetInvulnerability", 1f);
+        }
+        else if (source.CompareTag("Environment"))
+        {
+            GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity);
+            Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);
+            if (PlayerController.GetState() == PlayerController.State.Dashing)
+                PlayerController.SetState(PlayerController.State.Normal);
+            base.TakeDamage(source, 100);
+            if (!invulnerable)
+            {
+                invulnerable = true;
+                Invoke("ResetInvulnerability", 1f);
+            }
+        }
     }
 
     public override void DestroySelf(float delay = 0f)
@@ -25,7 +54,8 @@ public class Player : Unit
         GetComponent<BoxCollider2D>().enabled = false;
         GetComponent<CapsuleCollider2D>().enabled = false;
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
-        Invoke("Revive", 4f); //Invoke("GameOver", 3f);
+        StopCoroutine(BarrierEnd(0f, false)); BarrierEnd(0f, false);
+        Invoke("Revive", 4f);
     }
 
     //==================== PRIVATE ====================//
@@ -33,16 +63,29 @@ public class Player : Unit
     {
         base.Start();
         health = 4;
-        defaultSprite = GetComponent<SpriteRenderer>().sprite;
     }
 
-    private void ResetSpriteAngle() {
-        spriteRenderer.sprite = defaultSprite;
-    }
-
-    private void GameOver()
+    private IEnumerator BarrierEnd(float delay, bool playSound)
     {
-        SceneManager.LoadScene("MainMenu");
+        yield return new WaitForSeconds(delay);
+        barrier.SetActive(false);
+        if (playSound)
+        {
+            GameObject sound = Instantiate(barrierEndSoundRef, barrier.transform.position, Quaternion.identity);
+            Destroy(sound, sound.GetComponent<AudioSource>().clip.length);
+        }
+        Invoke("ResetBarrierCD", 15f);
+    }
+
+    private void ResetBarrierCD()
+    {
+        barrierOnCD = false;
+        // TODO: Add SFX to indicate when cooldown ends.
+    }
+
+    private void ResetInvulnerability()
+    {
+        invulnerable = false;
     }
 
     private void Revive()
@@ -52,6 +95,7 @@ public class Player : Unit
         GetComponent<BoxCollider2D>().enabled = true;
         GetComponent<CapsuleCollider2D>().enabled = true;
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+        CancelInvoke("ResetBarrierCD"); ResetBarrierCD();
         health = 3;
     }
 }

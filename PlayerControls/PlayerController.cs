@@ -7,7 +7,6 @@ public class PlayerController : MonoBehaviour
     private const float JUMP_FALL_MULTIPLIER = 1f;
     private const float JUMP_LOW_MULTIPLIER = 0.5f;
     private const float JUMP_TIME_MAX = 0.35f;
-    private const KeyCode KEY_CODE_DASH = KeyCode.O;
 
     public static bool isEnabled = true;
 
@@ -27,7 +26,6 @@ public class PlayerController : MonoBehaviour
     private static bool isJumping = false;
     private static bool isGrounded;
     private static bool attackOnCD = false; // This can also be flag for while attacking.
-    private static bool invulnerable = false;
     private static State state;
 
     private SpriteRenderer spriteRenderer;
@@ -86,13 +84,11 @@ public class PlayerController : MonoBehaviour
     {
         if (isEnabled && GetComponent<Player>().health > 0)
         {
-            if (!invulnerable)
+            if (!player.invulnerable)
             {
                 GameObject collidingEnemy = CheckEnemyCollision();
                 if (collidingEnemy != null)
                 {
-                    invulnerable = true;
-                    Invoke("ResetInvulnerability", 1f);
                     player.TakeDamage(collidingEnemy, 1);
                 }
             }
@@ -145,11 +141,6 @@ public class PlayerController : MonoBehaviour
             if (hit) return hit.collider.gameObject;
         }
         return null;
-    }
-
-    private void ResetInvulnerability()
-    {
-        invulnerable = false;
     }
 
     private void ProcessInputs()
@@ -208,7 +199,7 @@ public class PlayerController : MonoBehaviour
                 }
 
                 //----- Dash -----//
-                if (Input.GetKeyDown(KEY_CODE_DASH))
+                if (Input.GetKeyDown(KeyCode.O))
                 {
                     isJumping = false;
                     dashDir = GetInputDirection();
@@ -221,6 +212,10 @@ public class PlayerController : MonoBehaviour
                     rb.gravityScale = 0;
                     state = State.Dashing;
                 }
+
+                //----- Barrier -----//
+                if (Input.GetKeyDown(KeyCode.P) && !player.barrierOnCD) player.BarrierStart();
+
                 break;
             case State.Dashing:
                 float dashSpeedDropMultiplier = 2f;

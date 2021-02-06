@@ -5,8 +5,11 @@ public class Unit : MonoBehaviour
 {
     public int health;
     public float moveSpeed;
+    public bool invulnerable = false;
+
     protected SpriteRenderer spriteRenderer;
     protected Rigidbody2D rb;
+
     private Material matDefault;
     private Material matWhite;
 
