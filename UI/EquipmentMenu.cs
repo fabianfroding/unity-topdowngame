@@ -86,38 +86,45 @@ public class EquipmentMenu : MonoBehaviour
             selector.transform.position = currentSlot.transform.position;
 
             SetPreview();
-
             Invoke("ResetMoving", 0.2f);
         }
     }
 
     private void SelectEquipment()
     {
-        if (posIndex.y == 0) // Unequip.
+        if (posIndex.y == 0 && currentSlot.GetComponent<EquipmentSlot>().equipment != null) // Unequip.
         {
-            if (currentSlot.GetComponent<EquipmentSlot>().equipment != null)
-            {
-                GameObject selected = currentSlot.GetComponent<EquipmentSlot>().equipment;
-                selected.transform.position = selected.GetComponent<Equipment>().orgPos.position;
-                selected.GetComponent<Equipment>().orgPos.gameObject.GetComponent<EquipmentSlot>().equipment = selected;
-                currentSlot.GetComponent<EquipmentSlot>().equipment = null;
-                // TODO: Swap equipped towards index 0.
-                equippedIndex--;
-            }
+            MoveEquipment(currentSlot, currentSlot.GetComponent<EquipmentSlot>().equipment.GetComponent<Equipment>().orgPos);
+            ArrangeRow(rowEquipped);
+            equippedIndex--;
         }
-        else if (posIndex.y > 0) // Equip.
+        else if (posIndex.y > 0 && currentSlot.GetComponent<EquipmentSlot>().equipment != null) // Equip.
         {
             Equipment e = currentSlot.GetComponent<EquipmentSlot>().equipment.GetComponent<Equipment>();
-            if (e != null && e.collected && !e.equipped)
+            if (e != null && e.collected)
             {
                 e.orgPos = currentSlot.transform;
-                currentSlot.GetComponent<EquipmentSlot>().equipment.transform.position = rowEquipped[equippedIndex].transform.position;
-                currentSlot.GetComponent<EquipmentSlot>().equipment = null;
-                rowEquipped[equippedIndex].GetComponent<EquipmentSlot>().equipment = e.gameObject;
+                MoveEquipment(currentSlot, rowEquipped[equippedIndex].transform);
                 equippedIndex++;
             }
         }
         SetPreview();
+    }
+
+    private void ArrangeRow(GameObject[] row)
+    {
+        for (int i = 0; i < row.Length - 1; i++)
+        {
+            if (row[i].GetComponent<EquipmentSlot>().equipment == null && 
+                row[i + 1].GetComponent<EquipmentSlot>().equipment != null) MoveEquipment(row[i + 1], row[i].transform);
+        }
+    }
+
+    private void MoveEquipment(GameObject selected, Transform dest)
+    {
+        selected.GetComponent<EquipmentSlot>().equipment.transform.position = dest.position;
+        dest.gameObject.GetComponent<EquipmentSlot>().equipment = selected.GetComponent<EquipmentSlot>().equipment;
+        selected.GetComponent<EquipmentSlot>().equipment = null;
     }
 
     private void ResetMoving()
