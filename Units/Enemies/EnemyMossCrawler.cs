@@ -28,7 +28,6 @@ public class EnemyMossCrawler : Enemy
 
         if (!groundHit)
         {
-            Debug.Log("TRIG");
             ChangeFacingDirection();
         }
     }

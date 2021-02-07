@@ -80,6 +80,7 @@ public class PlayerController : MonoBehaviour
         state = State.Normal;
     }
 
+    // Physics-related should always go in Fixed
     private void FixedUpdate()
     {
         if (isEnabled && GetComponent<Player>().health > 0)
@@ -96,6 +97,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Input-related always goes in Update.
     private void Update()
     {
         isGrounded = CheckGroundCollision();

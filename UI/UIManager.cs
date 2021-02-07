@@ -7,12 +7,14 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private GameObject ClockUI;
     [SerializeField] private GameObject HealthUI;
-    [SerializeField] private GameObject InventoryUI;
     [SerializeField] private GameObject player; // TODO: Remove and make player hp static.
     [SerializeField] private int numOfTears;
     [SerializeField] private Image[] tears;
     [SerializeField] private Sprite tearFilled;
     [SerializeField] private Sprite tearEmpty;
+
+    [SerializeField] private GameObject EquipmentUI;
+    [SerializeField] private GameObject[] slots;
 
     //==================== PUBLIC ====================//
     public void HealthUISetActive(bool flag)
@@ -31,29 +33,36 @@ public class UIManager : MonoBehaviour
         instance = this;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
-        SetHealthUI();
+        ProcessInputs();
+        if (HealthUI.activeSelf) SetHealthUI();
     }
 
-    private void Update()
+    private void ProcessInputs()
     {
         if (Input.GetKeyDown(KeyCode.F))
         {
-            if (!InventoryUI.activeSelf)
-            {
-                InventoryUI.SetActive(true);
-                HealthUI.SetActive(false);
-                ClockUI.SetActive(false);
-                PlayerController.isEnabled = false;
-            }
-            else
-            {
-                InventoryUI.SetActive(false);
-                HealthUI.SetActive(true);
-                ClockUI.SetActive(true);
-                PlayerController.isEnabled = true;
-            }
+            ToggleInventoryMenu();
+        }
+    }
+
+    private void ToggleInventoryMenu()
+    {
+        if (!EquipmentUI.activeSelf)
+        {
+            HealthUI.SetActive(false);
+            ClockUI.SetActive(false);
+            PlayerController.isEnabled = false;
+            EquipmentUI.SetActive(true);
+            EquipmentUI.GetComponent<EquipmentMenu>().SetPreview();
+        }
+        else
+        {
+            EquipmentUI.SetActive(false);
+            HealthUI.SetActive(true);
+            ClockUI.SetActive(true);
+            PlayerController.isEnabled = true;
         }
     }
 
