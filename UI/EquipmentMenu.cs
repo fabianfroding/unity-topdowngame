@@ -4,6 +4,8 @@ using TMPro;
 
 public class EquipmentMenu : MonoBehaviour
 {
+    public static EquipmentMenu instance;
+
     private const int COLS = 6;
     private const int ROWS = 4;
 
@@ -26,9 +28,8 @@ public class EquipmentMenu : MonoBehaviour
     //==================== PUBLIC ====================//
     public void SetPreview()
     {
-        if (currentSlot.GetComponent<EquipmentSlot>().equipment != null)
+        if (currentSlot != null && currentSlot.GetComponent<EquipmentSlot>().equipment != null)
         {
-            Debug.Log("NOT NULL");
             previewText.text = currentSlot.GetComponent<EquipmentSlot>().equipment.name;
             previewImage.gameObject.SetActive(true);
             previewImage.sprite = currentSlot.GetComponent<EquipmentSlot>().equipment.GetComponent<Image>().sprite;
@@ -36,16 +37,26 @@ public class EquipmentMenu : MonoBehaviour
         }
         else
         {
-            Debug.Log("NULL");
             previewText.text = "";
             previewImage.gameObject.SetActive(false);
             previewDescription.text = "";
         }
     }
 
+    public bool IsEquipped(string filter)
+    {
+        for (int i = 0; i < rowEquipped.Length - 1; i++)
+        {
+            GameObject e = rowEquipped[i].GetComponent<EquipmentSlot>().equipment;
+            if (e != null && e.name == filter) return true;
+        }
+        return false;
+    }
+
     //==================== PRIVATE ====================//
     private void Start()
     {
+        instance = this;
         AddRowToGrid(0, rowEquipped);
         AddRowToGrid(1, rowCollection1);
         AddRowToGrid(2, rowCollection2);

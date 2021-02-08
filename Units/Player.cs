@@ -17,7 +17,7 @@ public class Player : Unit
         barrier.SetActive(true);
         GameObject sound = Instantiate(barrierSoundRef, barrier.transform.position, Quaternion.identity);
         Destroy(sound, sound.GetComponent<AudioSource>().clip.length);
-        StartCoroutine(BarrierEnd(1.5f, true));
+        StartCoroutine(BarrierEnd(EquipmentMenu.instance.IsEquipped("ArgonBarrier") ? 3f : 1.5f, true));
     }
 
     public override void TakeDamage(GameObject source, int amt)
@@ -74,11 +74,12 @@ public class Player : Unit
             GameObject sound = Instantiate(barrierEndSoundRef, barrier.transform.position, Quaternion.identity);
             Destroy(sound, sound.GetComponent<AudioSource>().clip.length);
         }
-        Invoke("ResetBarrierCD", 15f);
+        Invoke("ResetBarrierCD", (EquipmentMenu.instance != null && EquipmentMenu.instance.IsEquipped("BarrierRefresh") ? 7.5f : 15f));
     }
 
     private void ResetBarrierCD()
     {
+        Debug.Log("Reset Barrier");
         barrierOnCD = false;
         // TODO: Add SFX to indicate when cooldown ends.
     }

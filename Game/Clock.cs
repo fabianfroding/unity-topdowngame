@@ -36,7 +36,8 @@ public class Clock : MonoBehaviour
 
     void FixedUpdate()
     {
-        day += Time.deltaTime / SEC_PER_DAY;
+        day += Time.deltaTime / SEC_PER_DAY * (EquipmentMenu.instance != null && EquipmentMenu.instance.IsEquipped("ChronoSeal") ? 0.5f : 1f);
+        
         godsEye.transform.localScale = new Vector3(0.33f + day * 0.8f, 0.33f + day * 0.8f, 0);
 
         SetDayNightSymbol(day);
