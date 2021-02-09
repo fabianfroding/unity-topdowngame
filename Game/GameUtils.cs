@@ -6,6 +6,8 @@ public class GameUtils : MonoBehaviour
 {
     public static GameUtils instance;
 
+    public static readonly string TAG_ENEMY = "Enemy";
+
     private void Start()
     {
         instance = this;

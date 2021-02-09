@@ -7,6 +7,10 @@ public class PlayerController : MonoBehaviour
     private const float JUMP_FALL_MULTIPLIER = 1f;
     private const float JUMP_LOW_MULTIPLIER = 0.5f;
     private const float JUMP_TIME_MAX = 0.35f;
+    private const KeyCode KEY_ATTACK = KeyCode.J;
+    private const KeyCode KEY_DASH = KeyCode.I;
+    private const KeyCode KEY_BARRIER = KeyCode.O;
+    private const KeyCode KEY_NOVA = KeyCode.P;
 
     public static bool isEnabled = true;
 
@@ -181,7 +185,7 @@ public class PlayerController : MonoBehaviour
                 if (Input.GetKeyUp(KeyCode.Space)) isJumping = false;
 
                 //----- Attack -----//
-                if (!attackOnCD && Input.GetKeyDown(KeyCode.K))
+                if (!attackOnCD && Input.GetKeyDown(KEY_ATTACK))
                 {
                     attackOnCD = true;
                     GameObject swingSound = Instantiate(swingSoundRef, transform.position, Quaternion.identity);
@@ -201,7 +205,7 @@ public class PlayerController : MonoBehaviour
                 }
 
                 //----- Dash -----//
-                if (Input.GetKeyDown(KeyCode.O))
+                if (Input.GetKeyDown(KEY_DASH))
                 {
                     isJumping = false;
                     dashDir = GetInputDirection();
@@ -216,7 +220,10 @@ public class PlayerController : MonoBehaviour
                 }
 
                 //----- Barrier -----//
-                if (Input.GetKeyDown(KeyCode.P) && !player.barrierOnCD) player.BarrierStart();
+                if (Input.GetKeyDown(KEY_BARRIER)) player.BarrierStart();
+
+                //----- Nova -----//
+                if (Input.GetKeyDown(KEY_NOVA)) player.NovaStart();
 
                 break;
             case State.Dashing:

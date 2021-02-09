@@ -1,23 +1,21 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player : Unit
 {
-    public bool barrierOnCD = false;
-
-    [SerializeField] private GameObject barrier;
+    public GameObject barrier;
+    public GameObject novaRef;
     [SerializeField] private GameObject hitSoundRef;
-    [SerializeField] private GameObject barrierSoundRef;
-    [SerializeField] private GameObject barrierEndSoundRef;
 
     //==================== PUBLIC ====================//
     public void BarrierStart()
     {
-        barrierOnCD = true;
-        barrier.SetActive(true);
-        GameObject sound = Instantiate(barrierSoundRef, barrier.transform.position, Quaternion.identity);
-        Destroy(sound, sound.GetComponent<AudioSource>().clip.length);
-        StartCoroutine(BarrierEnd(EquipmentMenu.instance.IsEquipped("ArgonBarrier") ? 3f : 1.5f, true));
+        if (!barrier.GetComponent<Barrier>().onCD) barrier.GetComponent<Barrier>().Activate();
+    }
+
+    public void NovaStart()
+    {
+        GameObject nova = Instantiate(novaRef, transform.position, Quaternion.identity);
+        nova.GetComponent<Nova>().Activate(gameObject);
     }
 
     public override void TakeDamage(GameObject source, int amt)
@@ -54,7 +52,7 @@ public class Player : Unit
         GetComponent<BoxCollider2D>().enabled = false;
         GetComponent<CapsuleCollider2D>().enabled = false;
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
-        StopCoroutine(BarrierEnd(0f, false)); BarrierEnd(0f, false);
+        barrier.GetComponent<Barrier>().Deactivate(true);
         Invoke("Revive", 4f);
     }
 
@@ -63,25 +61,6 @@ public class Player : Unit
     {
         base.Start();
         health = 4;
-    }
-
-    private IEnumerator BarrierEnd(float delay, bool playSound)
-    {
-        yield return new WaitForSeconds(delay);
-        barrier.SetActive(false);
-        if (playSound)
-        {
-            GameObject sound = Instantiate(barrierEndSoundRef, barrier.transform.position, Quaternion.identity);
-            Destroy(sound, sound.GetComponent<AudioSource>().clip.length);
-        }
-        Invoke("ResetBarrierCD", (EquipmentMenu.instance != null && EquipmentMenu.instance.IsEquipped("BarrierRefresh") ? 7.5f : 15f));
-    }
-
-    private void ResetBarrierCD()
-    {
-        Debug.Log("Reset Barrier");
-        barrierOnCD = false;
-        // TODO: Add SFX to indicate when cooldown ends.
     }
 
     private void ResetInvulnerability()
@@ -96,7 +75,7 @@ public class Player : Unit
         GetComponent<BoxCollider2D>().enabled = true;
         GetComponent<CapsuleCollider2D>().enabled = true;
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
-        CancelInvoke("ResetBarrierCD"); ResetBarrierCD();
+        barrier.GetComponent<Barrier>().ResetCD();
         health = 3;
     }
 }
