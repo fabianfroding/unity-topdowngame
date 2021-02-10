@@ -75,7 +75,7 @@ public class EquipmentMenu : MonoBehaviour
         else if (y > 0) MoveSelector("up");
         else if (y < 0) MoveSelector("down");
 
-        if (Input.GetKeyDown(KeyCode.K)) SelectEquipment();
+        if (Input.GetKeyDown(KeyCode.J)) SelectEquipment();
     }
 
     private void AddRowToGrid(int index, GameObject[] row)

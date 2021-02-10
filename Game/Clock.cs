@@ -22,9 +22,8 @@ public class Clock : MonoBehaviour
 
     [SerializeField] private GameObject godsEye;
 
-    private const float SEC_PER_DAY = 60f; //1039.8f;
+    private const float SEC_PER_DAY = 1039.8f;
     private static float day;
-    private static int secPassed = 0;
 
     private bool daySymbol = true;
 
@@ -50,9 +49,7 @@ public class Clock : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(Tick());
-        StartCoroutine(Shake(SEC_PER_DAY * 0.75f));
-
+        StartCoroutine(Shake(SEC_PER_DAY * 2.5f));
     }
 
     private void FixedUpdate()
@@ -70,21 +67,11 @@ public class Clock : MonoBehaviour
         transform.eulerAngles = new Vector3(0, 0, -dayNorm * rot - 90f);
     }
 
-    private IEnumerator Tick()
-    {
-        yield return new WaitForSeconds(1f);
-        secPassed++;
-        Debug.Log("Ticking: " + secPassed);
-        StartCoroutine(Tick());
-    }
-
     private IEnumerator Shake(float tick)
     {
         yield return new WaitForSeconds(tick);
-
         CameraShake.StartShake();
-        float shakeFrequency = (SEC_PER_DAY * 3 / (secPassed + 1)) + 2;
-        StartCoroutine(Shake(shakeFrequency));
+        StartCoroutine(Shake(SEC_PER_DAY));
     }
 
     private void SetDayNightSymbol(float time)

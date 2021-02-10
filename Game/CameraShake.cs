@@ -14,10 +14,13 @@ public class CameraShake : MonoBehaviour
     //==================== PUBLIC ====================//
     public static void StartShake(float pow = 0.7f, float dur = 1.0f, float slowDownAmt = 1.0f)
     {
-        power = pow;
-        duration = dur;
-        slowDownAmount = slowDownAmt;
-        shouldShake = true;
+        if (duration > 0) // Don't shake if already shaking.
+        {
+            power = pow;
+            duration = dur;
+            slowDownAmount = slowDownAmt;
+            shouldShake = true;
+        }
     }
 
     //==================== PRIVATE ====================//

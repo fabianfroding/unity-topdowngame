@@ -4,6 +4,7 @@ public class Player : Unit
 {
     public GameObject barrier;
     public GameObject novaRef;
+    [SerializeField] private GameObject bodyCenter;
     [SerializeField] private GameObject hitSoundRef;
 
     //==================== PUBLIC ====================//
@@ -14,8 +15,9 @@ public class Player : Unit
 
     public void NovaStart()
     {
-        GameObject nova = Instantiate(novaRef, transform.position, Quaternion.identity);
+        GameObject nova = Instantiate(novaRef, bodyCenter.transform.position, Quaternion.identity);
         nova.GetComponent<Nova>().Activate(gameObject);
+        nova.transform.SetParent(transform);
     }
 
     public override void TakeDamage(GameObject source, int amt)
