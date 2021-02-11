@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
@@ -7,8 +6,11 @@ public class Unit : MonoBehaviour
     public float moveSpeed;
     public bool invulnerable = false;
 
+    [SerializeField] protected GameObject hitSoundRef;
+    [SerializeField] protected bool facingRight;
     protected SpriteRenderer spriteRenderer;
     protected Rigidbody2D rb;
+    protected Animator animator;
 
     private Material matDefault;
     private Material matWhite;
@@ -35,15 +37,17 @@ public class Unit : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    //==================== PRIVATE ====================//
+    //==================== PROTECTED ====================//
     protected virtual void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
         matDefault = spriteRenderer.material;
         matWhite = Resources.Load("WhiteFlash", typeof(Material)) as Material;
     }
 
+    //==================== PRIVATE ====================//
     private void ResetMaterial()
     {
         spriteRenderer.material = matDefault;

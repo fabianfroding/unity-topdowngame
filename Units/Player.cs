@@ -5,7 +5,6 @@ public class Player : Unit
     public GameObject barrier;
     public GameObject novaRef;
     [SerializeField] private GameObject bodyCenter;
-    [SerializeField] private GameObject hitSoundRef;
 
     //==================== PUBLIC ====================//
     public void BarrierStart()
@@ -54,17 +53,18 @@ public class Player : Unit
         GetComponent<BoxCollider2D>().enabled = false;
         GetComponent<CapsuleCollider2D>().enabled = false;
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
-        barrier.GetComponent<Barrier>().Deactivate(true);
+        barrier.GetComponent<Barrier>().Deactivate(barrier.activeSelf);
         Invoke("Revive", 4f);
     }
 
-    //==================== PRIVATE ====================//
+    //==================== PROTECTED ====================//
     protected override void Start()
     {
         base.Start();
         health = 4;
     }
 
+    //==================== PRIVATE ====================//
     private void ResetInvulnerability()
     {
         invulnerable = false;

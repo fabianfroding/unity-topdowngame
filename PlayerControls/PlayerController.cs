@@ -84,7 +84,7 @@ public class PlayerController : MonoBehaviour
         state = State.Normal;
     }
 
-    // Physics-related should always go in Fixed
+    // Physics-related should always go in Fixed.
     private void FixedUpdate()
     {
         if (isEnabled && GetComponent<Player>().health > 0)
@@ -93,10 +93,7 @@ public class PlayerController : MonoBehaviour
             if (!player.invulnerable)
             {
                 GameObject collidingEnemy = CheckEnemyCollision();
-                if (collidingEnemy != null)
-                {
-                    player.TakeDamage(collidingEnemy, 1);
-                }
+                if (collidingEnemy != null) player.TakeDamage(collidingEnemy, 1);
             }
         }
     }
@@ -106,6 +103,7 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = CheckGroundCollision();
         isColliding = CheckSideCollision();
+        if (isJumping && isGrounded) isJumping = false;
         if (isEnabled && GetComponent<Player>().health > 0) ProcessInputs();
     }
 
@@ -134,17 +132,17 @@ public class PlayerController : MonoBehaviour
         for (int i = 0; i < sideCollisionCheck.Length; i++)
         {
             hit = Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
-            if (hit) return hit.collider.gameObject;
+            if (hit && !hit.collider.isTrigger) return hit.collider.gameObject;
         }
         for (int i = 0; i < groundCheck.Length; i++)
         {
             hit = Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
-            if (hit) return hit.collider.gameObject;
+            if (hit && !hit.collider.isTrigger) return hit.collider.gameObject;
         }
         for (int i = 0; i < upCollisionCheck.Length; i++)
         {
             hit = Physics2D.Linecast(transform.position, upCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
-            if (hit) return hit.collider.gameObject;
+            if (hit && !hit.collider.isTrigger) return hit.collider.gameObject;
         }
         return null;
     }
@@ -160,9 +158,9 @@ public class PlayerController : MonoBehaviour
                 SetFacing(x);
                 if (isGrounded && x != 0)
                 {
-                    animator.Play("PlayerWalk");
+                    animator.Play("Player_Walk");
                 }
-                else if (!attackOnCD) animator.Play("PlayerIdle");
+                else if (!attackOnCD) animator.Play("Player_Idle");
 
                 //----- Jump -----//
                 if (isGrounded && Input.GetKeyDown(KeyCode.Space))
@@ -192,12 +190,12 @@ public class PlayerController : MonoBehaviour
                     Destroy(swingSound, swingSound.GetComponent<AudioSource>().clip.length);
                     if (Input.GetKey(KeyCode.W))
                     {
-                        animator.Play("PlayerAttackUp");
+                        animator.Play("Player_AttackUp");
                         slashUpHitBox.SetActive(true);
                     }
                     else
                     {
-                        animator.Play("PlayerAttack");
+                        animator.Play("Player_Attack");
                         if (facingLeft) slashHitBoxRight.SetActive(true);
                         else slashHitBoxLeft.SetActive(true);
                     }
@@ -312,7 +310,7 @@ public class PlayerController : MonoBehaviour
         slashHitBoxLeft.SetActive(false);
         slashHitBoxRight.SetActive(false);
         slashUpHitBox.SetActive(false);
-        animator.Play("PlayerIdle");
+        animator.Play("Player_Idle");
         attackOnCD = false;
     }
 
@@ -321,7 +319,7 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("Ground"))
         {
             // Change to cancel on collision with all environment objects, not just ground. (Or do we really need to?)
-            isJumping = false;
+            //isJumping = false;
             if (state == State.Dashing) SetState(State.Normal);
         }
     }

@@ -1,10 +1,6 @@
-﻿public class Enemy : Unit
-{
-    //==================== PUBLIC ====================//
-    protected override void Start()
-    {
-        base.Start();
-    }
+﻿using UnityEngine;
 
-    //==================== PRIVATE ====================//
+public class Enemy : Unit
+{
+
 }

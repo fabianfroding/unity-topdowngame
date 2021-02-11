@@ -4,18 +4,15 @@ public class EnemyMossCrawler : Enemy
 {
     [SerializeField] private Transform groundCheckFront;
     [SerializeField] private Transform sideCheckFront;
-
-    private bool movingRight = false;
     private Vector3 baseScale;
 
-    //==================== PUBLIC ====================//
+    //==================== PRIVATE ====================//
     protected override void Start()
     {
-        base.Start();
         baseScale = transform.localScale;
+        base.Start();
     }
 
-    //==================== PRIVATE ====================//
     private void FixedUpdate()
     {
         Patrol();
@@ -23,21 +20,16 @@ public class EnemyMossCrawler : Enemy
 
     private void Patrol()
     {
-        rb.velocity = new Vector2(movingRight ? moveSpeed : -moveSpeed, rb.velocity.y);
-        RaycastHit2D groundHit = Physics2D.Linecast(transform.position, groundCheckFront.position, 1 << LayerMask.NameToLayer("Ground"));
-
-        if (!groundHit)
-        {
-            ChangeFacingDirection();
-        }
+        rb.velocity = new Vector2(facingRight ? moveSpeed : -moveSpeed, rb.velocity.y);
+        if (!Physics2D.Linecast(transform.position, groundCheckFront.position, 1 << LayerMask.NameToLayer("Ground"))) ChangeFacingDirection();
     }
 
     private void ChangeFacingDirection()
     {
         Vector3 newScale = baseScale;
-        if (movingRight) newScale.x = baseScale.x;
+        if (facingRight) newScale.x = baseScale.x;
         else newScale.x = -baseScale.x;
         transform.localScale = newScale;
-        movingRight = !movingRight;
+        facingRight = !facingRight;
     }
 }
