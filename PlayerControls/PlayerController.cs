@@ -103,7 +103,6 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = CheckGroundCollision();
         isColliding = CheckSideCollision();
-        if (isJumping && isGrounded) isJumping = false;
         if (isEnabled && GetComponent<Player>().health > 0) ProcessInputs();
     }
 
@@ -319,7 +318,7 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("Ground"))
         {
             // Change to cancel on collision with all environment objects, not just ground. (Or do we really need to?)
-            //isJumping = false;
+            isJumping = false;
             if (state == State.Dashing) SetState(State.Normal);
         }
     }

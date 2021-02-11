@@ -36,7 +36,7 @@ public class Dialog : MonoBehaviour
     //========== PRIVATE METHODS ==========//
     private void FixedUpdate()
     {
-        if (sentenceDone && Input.GetAxisRaw("Vertical") < 0)
+        if (sentenceDone && Input.GetKeyDown(KeyCode.J))
         {
             sentenceDone = false;
             if (sentenceIndex < sentences.Length - 1)
