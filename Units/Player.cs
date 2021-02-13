@@ -21,7 +21,7 @@ public class Player : Unit
 
     public override void TakeDamage(GameObject source, int amt)
     {
-        if (!invulnerable && !barrier.activeSelf && source.CompareTag("Enemy"))
+        if (!invulnerable && !barrier.activeSelf && source.CompareTag(EditorConstants.TAG_ENEMY))
         {
             invulnerable = true;
             GetComponent<TimeStop>().StopTime(0.1f, 10, 2f);
@@ -32,7 +32,7 @@ public class Player : Unit
             base.TakeDamage(source, amt);
             Invoke("ResetInvulnerability", 1f);
         }
-        else if (source.CompareTag("Environment"))
+        else if (source.CompareTag(EditorConstants.TAG_ENVIRONMENT))
         {
             GameObject hitSound = Instantiate(hitSoundRef, transform.position, Quaternion.identity);
             Destroy(hitSound, hitSound.GetComponent<AudioSource>().clip.length);

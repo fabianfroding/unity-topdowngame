@@ -22,7 +22,7 @@ public class Nova : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!dmgDealt && other.gameObject.CompareTag(GameUtils.TAG_ENEMY))
+        if (!dmgDealt && other.gameObject.CompareTag(EditorConstants.TAG_ENEMY))
         {
             other.gameObject.GetComponent<Unit>().TakeDamage(source, 1);
         }

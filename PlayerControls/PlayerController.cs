@@ -110,7 +110,7 @@ public class PlayerController : MonoBehaviour
     {
         for (int i = 0; i < groundCheck.Length; i++)
         {
-            if (Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer("Ground"))) return true;
+            if (Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer(EditorConstants.LAYER_GROUND))) return true;
         }
         return false;
     }
@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour
     {
         for (int i = 0; i < sideCollisionCheck.Length; i++)
         {
-            if (Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Ground"))) return true;
+            if (Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer(EditorConstants.LAYER_GROUND))) return true;
         }
         return false;
     }
@@ -130,17 +130,17 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D hit;
         for (int i = 0; i < sideCollisionCheck.Length; i++)
         {
-            hit = Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
+            hit = Physics2D.Linecast(transform.position, sideCollisionCheck[i].position, 1 << LayerMask.NameToLayer(EditorConstants.TAG_ENEMY));
             if (hit && !hit.collider.isTrigger) return hit.collider.gameObject;
         }
         for (int i = 0; i < groundCheck.Length; i++)
         {
-            hit = Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
+            hit = Physics2D.Linecast(transform.position, groundCheck[i].position, 1 << LayerMask.NameToLayer(EditorConstants.TAG_ENEMY));
             if (hit && !hit.collider.isTrigger) return hit.collider.gameObject;
         }
         for (int i = 0; i < upCollisionCheck.Length; i++)
         {
-            hit = Physics2D.Linecast(transform.position, upCollisionCheck[i].position, 1 << LayerMask.NameToLayer("Enemy"));
+            hit = Physics2D.Linecast(transform.position, upCollisionCheck[i].position, 1 << LayerMask.NameToLayer(EditorConstants.TAG_ENEMY));
             if (hit && !hit.collider.isTrigger) return hit.collider.gameObject;
         }
         return null;
@@ -315,7 +315,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (other.gameObject.CompareTag("Ground"))
+        if (other.gameObject.CompareTag(EditorConstants.LAYER_GROUND))
         {
             // Change to cancel on collision with all environment objects, not just ground. (Or do we really need to?)
             isJumping = false;

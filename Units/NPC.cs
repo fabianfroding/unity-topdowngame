@@ -25,7 +25,7 @@ public class NPC : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.gameObject.CompareTag(EditorConstants.TAG_PLAYER))
         {
             playerInRange = true;
         }
@@ -33,7 +33,7 @@ public class NPC : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.gameObject.CompareTag(EditorConstants.TAG_PLAYER))
         {
             playerInRange = false;
         }

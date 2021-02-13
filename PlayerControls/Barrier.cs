@@ -54,10 +54,7 @@ public class Barrier : MonoBehaviour
             {
                 source = other.gameObject.GetComponent<Projectile>().source;
             }
-            else if (other.CompareTag("Enemy"))
-            {
-                source = other.gameObject;
-            }
+            else if (other.gameObject.CompareTag(EditorConstants.TAG_ENEMY)) source = other.gameObject;
             if (source != null)
             {
                 Deactivate(true); // Cooldown still activates in Invoke in Player, but it's not a big issue.
@@ -74,6 +71,7 @@ public class Barrier : MonoBehaviour
 
     private bool IsColliderHostileProjectile(Collider2D other)
     {
-        return other.CompareTag("Projectile") && other.GetComponent<Projectile>().source.CompareTag("Enemy");
+        return other.gameObject.CompareTag(EditorConstants.TAG_PROJECTILE) && 
+            other.GetComponent<Projectile>().source.CompareTag(EditorConstants.TAG_ENEMY);
     }
 }

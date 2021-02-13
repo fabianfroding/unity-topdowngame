@@ -21,7 +21,7 @@ public class EnemyMossCrawler : Enemy
     private void Patrol()
     {
         rb.velocity = new Vector2(facingRight ? moveSpeed : -moveSpeed, rb.velocity.y);
-        if (!Physics2D.Linecast(transform.position, groundCheckFront.position, 1 << LayerMask.NameToLayer("Ground"))) ChangeFacingDirection();
+        if (!Physics2D.Linecast(transform.position, groundCheckFront.position, 1 << LayerMask.NameToLayer(EditorConstants.LAYER_GROUND))) ChangeFacingDirection();
     }
 
     private void ChangeFacingDirection()

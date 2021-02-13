@@ -5,9 +5,9 @@ public class Unit : MonoBehaviour
     public int health;
     public float moveSpeed;
     public bool invulnerable = false;
+    public bool facingRight;
 
     [SerializeField] protected GameObject hitSoundRef;
-    [SerializeField] protected bool facingRight;
     protected SpriteRenderer spriteRenderer;
     protected Rigidbody2D rb;
     protected Animator animator;
