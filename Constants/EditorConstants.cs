@@ -1,9 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class EditorConstants : MonoBehaviour
 {
+    //==================== INPUT AXES ====================//
+    public static readonly string INPUT_AXIS_HORIZONTAL = "Horizontal";
+    public static readonly string INPUT_AXIS_VERTICAL = "Vertical";
+
     //==================== LAYERS ====================//
     public static readonly string LAYER_ENEMY = "Enemy";
     public static readonly string LAYER_GROUND = "Ground";

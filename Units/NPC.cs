@@ -2,7 +2,6 @@
 
 public class NPC : MonoBehaviour
 {
-    private const KeyCode KEY_INTERACT = KeyCode.W;
     private bool playerInRange;
     private Dialog dialog1;
 
@@ -13,9 +12,9 @@ public class NPC : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (playerInRange)
+        if (playerInRange && !UIManager.instance.isAnyMenuActive())
         {
-            if (Input.GetKey(KEY_INTERACT) && !dialog1.isActive() && PlayerController.isIdle())
+            if (Input.GetKey(KeyCodeConstants.KEY_CODE_INTERACT) && !Dialog.isActive() && PlayerController.isIdle())
             {
                 Debug.Log("Start dialog with " + this.gameObject.name);
                 dialog1.StartDialog();

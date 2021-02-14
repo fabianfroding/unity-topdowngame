@@ -2,27 +2,39 @@
 
 public class EnemyHarvester : Enemy
 {
-    private const float DODGE_CD = 8f;
     private const float DODGE_OFFSET = 12f;
 
     [SerializeField] private GameObject castPoint;
     [SerializeField] private Collider2D dmgCollider;
     [SerializeField] private Collider2D dodgeCollider;
     [SerializeField] private GameObject harvesterOrbRef;
+    [SerializeField] private GameObject dodgeSoundRef;
+    [SerializeField] private float dodgeCD = 8f;
     private bool dodgeOnCD = false;
+
+    //==================== PUBLIC ====================//
+    public override void TakeDamage(GameObject src, int amt)
+    {
+        base.TakeDamage(src, amt);
+        CancelInvoke("ResetDodgeCD");
+        ResetDodgeCD();
+    }
 
     //==================== PRIVATE ====================//
     private void FixedUpdate()
     {
-        if (!attackOnCD && CanSeePlayer(4f)) Attack();
+        if (CanSeePlayer(4f)) Attack();
     }
 
     private void Attack()
     {
-        attackOnCD = true;
-        animator.Play("Harvester_Attack");
-        Invoke("ResetAnimToIdle", 0.75f);
-        Invoke("ResetAttackCD", attackCD);
+        if (!attackOnCD)
+        {
+            attackOnCD = true;
+            animator.Play("Harvester_Attack");
+            Invoke("ResetAnimToIdle", 0.75f);
+            Invoke("ResetAttackCD", attackCD);
+        }
     }
 
     private void AttackAnimationEvent()
@@ -35,9 +47,8 @@ public class EnemyHarvester : Enemy
 
     private bool CanSeePlayer(float dist)
     {
-        RaycastHit2D hit = Physics2D.Linecast(castPoint.transform.position,
-            castPoint.transform.position + Vector3.right * (!facingRight ? dist : -dist), 
-            1 << LayerMask.NameToLayer(EditorConstants.LAYER_PLAYER));
+        Vector3 endPos = castPoint.transform.position + Vector3.right * (!facingRight ? -dist : dist);
+        RaycastHit2D hit = Physics2D.Linecast(castPoint.transform.position, endPos, 1 << LayerMask.NameToLayer(EditorConstants.LAYER_PLAYER));
         if (hit.collider != null && 
             !hit.collider.isTrigger && 
             hit.collider.gameObject.CompareTag(EditorConstants.TAG_PLAYER)) return true;
@@ -51,11 +62,16 @@ public class EnemyHarvester : Enemy
         dodgeOnCD = true;
         dodgeCollider.enabled = false;
         animator.Play("Harvester_Dodge");
+
+        GameObject sound = Instantiate(dodgeSoundRef, transform.position, Quaternion.identity);
+        Destroy(sound, sound.GetComponent<AudioSource>().clip.length);
+
+        // TODO: Do a raycast in env layer. If hit, then set offest to hit - const, so that enemy doesnt tp into env.
         transform.position = new Vector3(attacker.transform.position.x + offset, transform.position.y, transform.position.z);
         transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
         facingRight = !facingRight;
 
-        Invoke("ResetDodgeCD", DODGE_CD);
+        Invoke("ResetDodgeCD", dodgeCD);
         Invoke("ResetAnimToIdle", 0.5f);
     }
 

@@ -7,10 +7,6 @@ public class PlayerController : MonoBehaviour
     private const float JUMP_FALL_MULTIPLIER = 1f;
     private const float JUMP_LOW_MULTIPLIER = 0.5f;
     private const float JUMP_TIME_MAX = 0.35f;
-    private const KeyCode KEY_ATTACK = KeyCode.J;
-    private const KeyCode KEY_DASH = KeyCode.I;
-    private const KeyCode KEY_BARRIER = KeyCode.O;
-    private const KeyCode KEY_NOVA = KeyCode.P;
 
     public static bool isEnabled = true;
 
@@ -152,7 +148,7 @@ public class PlayerController : MonoBehaviour
         {
             case State.Normal:
                 //----- Move -----//
-                float x = Input.GetAxisRaw("Horizontal");
+                float x = Input.GetAxisRaw(EditorConstants.INPUT_AXIS_HORIZONTAL);
                 moveDir = new Vector2(x, 0).normalized;
                 SetFacing(x);
                 if (isGrounded && x != 0)
@@ -162,14 +158,14 @@ public class PlayerController : MonoBehaviour
                 else if (!attackOnCD) animator.Play("Player_Idle");
 
                 //----- Jump -----//
-                if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+                if (isGrounded && Input.GetKeyDown(KeyCodeConstants.KEYCODE_JUMP))
                 {
                     isJumping = true;
                     jumpTimeCounter = JUMP_TIME_MAX;
                     rb.velocity = new Vector2(rb.velocity.x * 0.8f, 1) * JUMP_SPEED; // TODO: Move to Move()
                 }
 
-                if (Input.GetKey(KeyCode.Space) && isJumping)
+                if (Input.GetKey(KeyCodeConstants.KEYCODE_JUMP) && isJumping)
                 {
                     if (jumpTimeCounter > 0)
                     {
@@ -179,15 +175,15 @@ public class PlayerController : MonoBehaviour
                     else isJumping = false;
                 }
 
-                if (Input.GetKeyUp(KeyCode.Space)) isJumping = false;
+                if (Input.GetKeyUp(KeyCodeConstants.KEYCODE_JUMP)) isJumping = false;
 
                 //----- Attack -----//
-                if (!attackOnCD && Input.GetKeyDown(KEY_ATTACK))
+                if (!attackOnCD && Input.GetKeyDown(KeyCodeConstants.KEY_CODE_ATTACK))
                 {
                     attackOnCD = true;
                     GameObject swingSound = Instantiate(swingSoundRef, transform.position, Quaternion.identity);
                     Destroy(swingSound, swingSound.GetComponent<AudioSource>().clip.length);
-                    if (Input.GetKey(KeyCode.W))
+                    if (Input.GetAxisRaw(EditorConstants.INPUT_AXIS_VERTICAL) > 0)
                     {
                         animator.Play("Player_AttackUp");
                         slashUpHitBox.SetActive(true);
@@ -202,7 +198,7 @@ public class PlayerController : MonoBehaviour
                 }
 
                 //----- Dash -----//
-                if (Input.GetKeyDown(KEY_DASH))
+                if (Input.GetKeyDown(KeyCodeConstants.KEY_CODE_DASH))
                 {
                     isJumping = false;
                     dashDir = GetInputDirection();
@@ -217,10 +213,10 @@ public class PlayerController : MonoBehaviour
                 }
 
                 //----- Barrier -----//
-                if (Input.GetKeyDown(KEY_BARRIER)) player.BarrierStart();
+                if (Input.GetKeyDown(KeyCodeConstants.KEY_CODE_BARRIER)) player.BarrierStart();
 
                 //----- Nova -----//
-                if (Input.GetKeyDown(KEY_NOVA)) player.NovaStart();
+                if (Input.GetKeyDown(KeyCodeConstants.KEY_CODE_NOVA)) player.NovaStart();
 
                 break;
             case State.Dashing:
@@ -277,30 +273,16 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 GetInputDirection()
     {
-        // North
-        if (Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-            return new Vector2(0, 1);
-        // Northeast
-        else if (Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
-            return new Vector2(1, 1).normalized;
-        // East
-        else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
-            return new Vector2(1, 0);
-        // Southeast
-        else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && Input.GetKey(KeyCode.D))
-            return new Vector2(1, -1).normalized;
-        // South
-        else if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-            return new Vector2(0, -1);
-        // Southwest
-        else if (!Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-            return new Vector2(-1, -1).normalized;
-        // West
-        else if (!Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-            return new Vector2(-1, 0);
-        // Northwest
-        else if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-            return new Vector2(-1, 1).normalized;
+        float x = Input.GetAxisRaw(EditorConstants.INPUT_AXIS_HORIZONTAL);
+        float y = Input.GetAxisRaw(EditorConstants.INPUT_AXIS_VERTICAL);
+        if (x == 0 && y > 0) return new Vector2(0, 1); // North
+        else if (x > 0 && y > 0) return new Vector2(1, 1).normalized; // Northeast
+        else if (x > 0 && y == 0) return new Vector2(1, 0); // East
+        else if (x > 0 && y < 0) return new Vector2(1, -1).normalized; // Southeast
+        else if (x == 0 && y < 0) return new Vector2(0, -1); // South
+        else if (x < 0 && y < 0) return new Vector2(-1, -1).normalized; // Southwest
+        else if (x < 0 && y == 0) return new Vector2(-1, 0); // West
+        else if (x < 0 && y > 0) return new Vector2(-1, 1).normalized; // Northwest
         return Vector2.zero;
     }
 

@@ -27,6 +27,12 @@ public class UIManager : MonoBehaviour
         ClockUI.SetActive(flag); // TODO: Make sure clock doesnt update while its deactivated.
     }
 
+    public bool isAnyMenuActive()
+    {
+        return EquipmentUI.activeSelf;
+        // TODO: Add other submenus.
+    }
+
     //==================== PRIVATE ====================//
     private void Start()
     {
@@ -41,9 +47,12 @@ public class UIManager : MonoBehaviour
 
     private void ProcessInputs()
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        if (!Dialog.isActive())
         {
-            ToggleInventoryMenu();
+            if (Input.GetKeyDown(KeyCodeConstants.KEY_CODE_INVENTORY))
+            {
+                ToggleInventoryMenu();
+            }
         }
     }
 

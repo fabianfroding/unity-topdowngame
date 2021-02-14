@@ -45,7 +45,7 @@ public class EquipmentMenu : MonoBehaviour
 
     public bool IsEquipped(string filter)
     {
-        for (int i = 0; i < rowEquipped.Length - 1; i++)
+        for (int i = 0; i < rowEquipped.Length; i++)
         {
             GameObject e = rowEquipped[i].GetComponent<EquipmentSlot>().equipment;
             if (e != null && e.name == filter) return true;
@@ -68,14 +68,14 @@ public class EquipmentMenu : MonoBehaviour
 
     private void Update()
     {
-        float x = Input.GetAxisRaw("Horizontal");
-        float y = Input.GetAxisRaw("Vertical");
+        float x = Input.GetAxisRaw(EditorConstants.INPUT_AXIS_HORIZONTAL);
+        float y = Input.GetAxisRaw(EditorConstants.INPUT_AXIS_VERTICAL);
         if (x > 0) MoveSelector("right");
         else if (x < 0) MoveSelector("left");
         else if (y > 0) MoveSelector("up");
         else if (y < 0) MoveSelector("down");
 
-        if (Input.GetKeyDown(KeyCode.J)) SelectEquipment();
+        if (Input.GetKeyDown(KeyCodeConstants.KEY_CODE_ATTACK)) SelectEquipment();
     }
 
     private void AddRowToGrid(int index, GameObject[] row)

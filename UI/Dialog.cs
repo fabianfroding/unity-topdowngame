@@ -11,7 +11,7 @@ public class Dialog : MonoBehaviour
     [SerializeField] private GameObject dialogBG; // TODO: Find a way so you dont have to set image for each npc.
     private int sentenceIndex;
     private bool sentenceDone;
-    private bool active;
+    private static bool active;
 
     //========== PUBLIC METHODS ==========//
     public void StartDialog()
@@ -28,15 +28,15 @@ public class Dialog : MonoBehaviour
         StartCoroutine(Type());
     }
 
-    public bool isActive()
+    public static bool isActive()
     {
-        return active; ;
+        return active;
     }
 
     //========== PRIVATE METHODS ==========//
     private void FixedUpdate()
     {
-        if (sentenceDone && Input.GetKeyDown(KeyCode.J))
+        if (sentenceDone && Input.GetKeyDown(KeyCodeConstants.KEY_CODE_ATTACK))
         {
             sentenceDone = false;
             if (sentenceIndex < sentences.Length - 1)
@@ -62,7 +62,6 @@ public class Dialog : MonoBehaviour
 
     private void ResetDialog()
     {
-        Debug.Log("Exit dialog");
         dialogBG.GetComponent<Image>().enabled = false;
         sentenceIndex = 0;
         textDisplay.text = "";
